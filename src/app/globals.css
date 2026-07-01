@@ -1,0 +1,143 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------
+   SolGig design tokens — dark first, near-monochrome with two accents
+   --------------------------------------------------------------- */
+:root {
+  --brand-violet: oklch(0.55 0.24 295);
+  --brand-mint: oklch(0.86 0.20 165);
+  --brand-grad: linear-gradient(135deg, var(--brand-violet), var(--brand-mint));
+
+  --bg: oklch(0.16 0.01 280);
+  --surface: oklch(0.20 0.012 280);
+  --surface-2: oklch(0.24 0.014 280);
+  --border: oklch(0.30 0.015 280);
+  --text: oklch(0.97 0 0);
+  --text-mut: oklch(0.72 0.01 280);
+
+  --ok: var(--brand-mint);
+  --warn: oklch(0.80 0.16 75);
+  --err: oklch(0.63 0.22 25);
+  --info: oklch(0.70 0.14 250);
+
+  --shadow-1: 0 1px 2px oklch(0 0 0 / 0.30);
+  --shadow-2: 0 8px 24px oklch(0 0 0 / 0.35);
+  --glow-violet: 0 0 0 1px oklch(0.55 0.24 295 / 0.4), 0 8px 40px oklch(0.55 0.24 295 / 0.25);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+
+  --font-display: var(--font-space-grotesk), system-ui, sans-serif;
+  --font-body: var(--font-inter), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+}
+
+:root.light {
+  --bg: oklch(0.99 0 0);
+  --surface: oklch(0.97 0.003 280);
+  --surface-2: oklch(0.94 0.005 280);
+  --border: oklch(0.88 0.008 280);
+  --text: oklch(0.20 0.01 280);
+  --text-mut: oklch(0.45 0.01 280);
+  --brand-violet: oklch(0.50 0.23 295);
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.03em;
+}
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Animated gradient mesh used behind the hero */
+@keyframes meshDrift {
+  0% { transform: translate3d(-4%, -2%, 0) scale(1.05); }
+  50% { transform: translate3d(4%, 3%, 0) scale(1.15); }
+  100% { transform: translate3d(-4%, -2%, 0) scale(1.05); }
+}
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+}
+@keyframes shimmer {
+  0% { background-position: -150% 0; }
+  100% { background-position: 250% 0; }
+}
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.8); }
+}
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes spinSlow {
+  to { transform: rotate(360deg); }
+}
+
+.mesh-drift { animation: meshDrift 18s ease-in-out infinite; }
+.float-y { animation: floatY 6s ease-in-out infinite; }
+.pulse-dot { animation: pulseDot 1.8s ease-in-out infinite; }
+.spin-slow { animation: spinSlow 22s linear infinite; }
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface) 25%,
+    var(--surface-2) 50%,
+    var(--surface) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 28s linear infinite;
+}
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+.text-grad {
+  background: var(--brand-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+::selection {
+  background: oklch(0.55 0.24 295 / 0.35);
+}
+
+/* Anyone who asked the system to calm motion gets quiet fades only */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
