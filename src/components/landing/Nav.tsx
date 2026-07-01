@@ -41,7 +41,12 @@ export function Nav() {
           <button className="hidden text-sm text-[var(--text-mut)] transition-colors hover:text-[var(--text)] sm:block">
             {copy.nav.signIn}
           </button>
-          <MagneticButton className="rounded-full px-4 py-2 text-sm font-medium text-black" >
+          <MagneticButton
+            onClick={() => {
+              window.location.href = "/dashboard/new";
+            }}
+            className="rounded-full px-4 py-2 text-sm font-medium text-black"
+          >
             <span
               className="absolute inset-0 -z-10 rounded-full"
               style={{ background: "var(--brand-grad)" }}
