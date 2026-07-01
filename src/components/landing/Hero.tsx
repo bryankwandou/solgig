@@ -47,7 +47,12 @@ export function Hero() {
 
           <Reveal dir="up" delay={0.25}>
             <div className="mt-8 flex flex-wrap items-center gap-3">
-              <MagneticButton className="relative rounded-full px-6 py-3 text-sm font-semibold text-black">
+              <MagneticButton
+                onClick={() => {
+                  window.location.href = "/dashboard/new";
+                }}
+                className="relative rounded-full px-6 py-3 text-sm font-semibold text-black"
+              >
                 <span
                   className="absolute inset-0 -z-10 rounded-full"
                   style={{ background: "var(--brand-grad)" }}
@@ -55,7 +60,7 @@ export function Hero() {
                 <span className="relative">{copy.hero.primary}</span>
               </MagneticButton>
               <a
-                href="#feed"
+                href="/feed"
                 className="rounded-full border px-6 py-3 text-sm font-medium text-[var(--text)] transition-colors hover:bg-[var(--surface)]"
               >
                 {copy.hero.secondary}
