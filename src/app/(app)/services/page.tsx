@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useWallet, useConnection } from "@solana/wallet-adapter-react";
+import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
+import { useAuth } from "@/lib/auth/useAuth";
 import { Stagger, StaggerItem, HoverTilt } from "@/components/motion";
 import { formatSol, shortAddress } from "@/lib/utils";
 
@@ -8,6 +11,7 @@ type Service = {
   id: string;
   slug: string;
   title: string;
+  thumbnail_url: string | null;
   tags: string[];
   price_lamports: number;
   delivery_days: number;
@@ -34,7 +38,8 @@ export default function ServicesPage() {
     <div>
       <h1 className="font-display text-2xl font-bold">Services</h1>
       <p className="mt-1 text-sm text-[var(--text-mut)]">
-        Book time with people who make things.
+        Book time with people who make things. Payment settles on Solana up
+        front; you mark the order complete once the work arrives.
       </p>
 
       {loading && <p className="mt-8 text-sm text-[var(--text-mut)]">Loading…</p>}
@@ -48,7 +53,21 @@ export default function ServicesPage() {
         {items.map((s) => (
           <StaggerItem key={s.id}>
             <HoverTilt>
-              <div className="h-full rounded-[var(--radius-md)] border p-5" style={{ background: "var(--surface)" }}>
+              <div className="flex h-full flex-col rounded-[var(--radius-md)] border p-5" style={{ background: "var(--surface)" }}>
+                {s.thumbnail_url ? (
+                  <img
+                    src={s.thumbnail_url}
+                    alt={s.title}
+                    className="mb-4 h-32 w-full rounded-[var(--radius-sm)] object-cover"
+                  />
+                ) : (
+                  <div
+                    className="mb-4 grid h-32 place-items-center rounded-[var(--radius-sm)] text-2xl font-bold text-black"
+                    style={{ background: "var(--brand-grad)" }}
+                  >
+                    {s.title.slice(0, 1).toUpperCase()}
+                  </div>
+                )}
                 <h3 className="font-medium">{s.title}</h3>
                 <div className="mt-2 flex flex-wrap gap-1">
                   {s.tags.slice(0, 3).map((t) => (
@@ -66,11 +85,125 @@ export default function ServicesPage() {
                 <div className="mt-2 text-xs text-[var(--text-mut)]">
                   {s.seller_name || s.seller_username || shortAddress(s.seller_wallet)}
                 </div>
+                <div className="mt-4 flex-1" />
+                <BookButton service={s} />
               </div>
             </HoverTilt>
           </StaggerItem>
         ))}
       </Stagger>
+    </div>
+  );
+}
+
+type BookState =
+  | { step: "idle" }
+  | { step: "creating" }
+  | { step: "paying" }
+  | { step: "confirming" }
+  | { step: "done" }
+  | { step: "error"; message: string };
+
+function BookButton({ service }: { service: Service }) {
+  const { user } = useAuth();
+  const { publicKey, sendTransaction } = useWallet();
+  const { connection } = useConnection();
+  const [state, setState] = useState<BookState>({ step: "idle" });
+
+  const isOwn = user?.wallet_address === service.seller_wallet;
+
+  async function book() {
+    if (!publicKey || !user) {
+      setState({ step: "error", message: "Connect a wallet first." });
+      return;
+    }
+    try {
+      setState({ step: "creating" });
+      const created = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ serviceId: service.id }),
+      }).then((r) => r.json());
+      if (created.error) throw new Error(created.error.message);
+
+      const { order, payment } = created;
+      // Escrow orders send the full amount to the platform escrow wallet;
+      // direct orders send the seller cut plus a separate fee transfer.
+      const sellerCut = payment.amountLamports - (payment.feeLamports ?? 0);
+      const tx = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: publicKey,
+          toPubkey: new PublicKey(payment.payTo ?? payment.sellerWallet),
+          lamports: sellerCut,
+        }),
+      );
+      if (payment.treasury && payment.feeLamports > 0) {
+        tx.add(
+          SystemProgram.transfer({
+            fromPubkey: publicKey,
+            toPubkey: new PublicKey(payment.treasury),
+            lamports: payment.feeLamports,
+          }),
+        );
+      }
+
+      setState({ step: "paying" });
+      const signature = await sendTransaction(tx, connection);
+
+      setState({ step: "confirming" });
+      const latest = await connection.getLatestBlockhash("confirmed");
+      await connection.confirmTransaction({ signature, ...latest }, "confirmed");
+
+      const confirmed = await fetch(`/api/orders/${order.id}/confirm`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ signature }),
+      }).then((r) => r.json());
+      if (confirmed.error) throw new Error(confirmed.error.message);
+
+      setState({ step: "done" });
+    } catch (e) {
+      setState({
+        step: "error",
+        message: e instanceof Error ? e.message : "The booking did not complete.",
+      });
+    }
+  }
+
+  if (state.step === "done") {
+    return (
+      <p className="mt-4 text-xs" style={{ color: "var(--brand-mint)" }}>
+        Booked. Track it on your Orders page and mark it complete when the
+        work lands.
+      </p>
+    );
+  }
+
+  return (
+    <div className="mt-4">
+      <button
+        onClick={book}
+        disabled={
+          isOwn || !user || ["creating", "paying", "confirming"].includes(state.step)
+        }
+        className="w-full rounded-full px-4 py-2 text-sm font-semibold text-black disabled:opacity-40"
+        style={{ background: "var(--brand-grad)" }}
+      >
+        {isOwn
+          ? "Your listing"
+          : state.step === "creating"
+            ? "Opening order…"
+            : state.step === "paying"
+              ? "Approve in your wallet…"
+              : state.step === "confirming"
+                ? "Confirming on Solana…"
+                : `Book for ${formatSol(service.price_lamports)}`}
+      </button>
+      {state.step === "error" && (
+        <p className="mt-2 text-xs" style={{ color: "var(--err)" }}>
+          {state.message}
+        </p>
+      )}
     </div>
   );
 }

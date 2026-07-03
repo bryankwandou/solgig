@@ -3,6 +3,7 @@ import { z } from "zod";
 import { sql } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { verifyPayment } from "@/lib/solana/pay";
+import { getEscrowAddress } from "@/lib/solana/escrow";
 
 export const runtime = "nodejs";
 
@@ -32,7 +33,8 @@ export async function POST(
 
   const rows = (await sql`
     SELECT id, buyer_id, seller_wallet, buyer_wallet, amount_lamports,
-           platform_fee_lamports, product_id, seller_id, status
+           platform_fee_lamports, product_id, service_id, order_type,
+           seller_id, status, escrow
     FROM orders WHERE id = ${id}
   `) as {
     buyer_id: string;
@@ -40,9 +42,12 @@ export async function POST(
     buyer_wallet: string;
     amount_lamports: number;
     platform_fee_lamports: number;
-    product_id: string;
+    product_id: string | null;
+    service_id: string | null;
+    order_type: string;
     seller_id: string;
     status: string;
+    escrow: boolean;
   }[];
   const order = rows[0];
   if (!order || order.buyer_id !== user.id) {
@@ -55,12 +60,27 @@ export async function POST(
     return NextResponse.json({ ok: true, status: order.status });
   }
 
-  const sellerMin = order.amount_lamports - order.platform_fee_lamports;
+  // Escrow orders pay the platform escrow wallet in full; direct orders
+  // pay the seller with the fee split off to the treasury.
+  const escrowAddress = order.escrow ? getEscrowAddress() : null;
+  if (order.escrow && !escrowAddress) {
+    return NextResponse.json(
+      { error: { code: "escrow_unavailable", message: "Escrow is not configured on this server." } },
+      { status: 500 },
+    );
+  }
+  const treasury = process.env.NEXT_PUBLIC_PLATFORM_TREASURY || null;
+  const payTo = escrowAddress ?? order.seller_wallet;
+  const sellerMin = escrowAddress
+    ? order.amount_lamports
+    : order.amount_lamports - order.platform_fee_lamports;
   const check = await verifyPayment({
     signature: parsed.data.signature,
     buyer: order.buyer_wallet,
-    seller: order.seller_wallet,
-    minLamports: sellerMin,
+    seller: payTo,
+    sellerMinLamports: sellerMin,
+    treasury: escrowAddress ? null : treasury,
+    feeLamports: escrowAddress ? 0 : order.platform_fee_lamports,
   });
   if (!check.ok) {
     return NextResponse.json(
@@ -69,28 +89,53 @@ export async function POST(
     );
   }
 
-  // Record the transaction, mark paid, and update counters.
-  await sql`
+  // A signature pays for exactly one order. The unique constraint on
+  // transactions.signature is the arbiter; if it already belongs to a
+  // different order, this confirm is a replay and gets rejected.
+  const inserted = await sql`
     INSERT INTO transactions (signature, order_id, from_address, to_address, amount_lamports)
     VALUES (${parsed.data.signature}, ${id}, ${order.buyer_wallet},
-            ${order.seller_wallet}, ${order.amount_lamports})
+            ${payTo}, ${order.amount_lamports})
     ON CONFLICT (signature) DO NOTHING
+    RETURNING id
   `;
-  await sql`
-    UPDATE orders
-    SET status = 'completed', payment_tx_signature = ${parsed.data.signature},
-        paid_at = NOW(), completed_at = NOW()
-    WHERE id = ${id}
-  `;
-  await sql`
-    UPDATE products SET total_purchases = total_purchases + 1 WHERE id = ${order.product_id}
-  `;
-  await sql`
-    UPDATE users
-    SET total_earned_lamports = total_earned_lamports + ${order.amount_lamports},
-        completed_orders = completed_orders + 1
-    WHERE id = ${order.seller_id}
-  `;
+  if (inserted.length === 0) {
+    const owner = (await sql`
+      SELECT order_id FROM transactions WHERE signature = ${parsed.data.signature}
+    `) as { order_id: string | null }[];
+    if (owner[0]?.order_id !== id) {
+      return NextResponse.json(
+        { error: { code: "signature_used", message: "That payment already covers another order." } },
+        { status: 409 },
+      );
+    }
+  }
 
-  return NextResponse.json({ ok: true, status: "completed" });
+  // Digital goods complete the moment payment lands; service orders sit
+  // at 'paid' until the buyer accepts the delivered work.
+  const nextStatus = order.order_type === "service" ? "paid" : "completed";
+
+  // Guarded update: only the confirm that flips pending forward gets to
+  // bump the counters, so concurrent retries stay idempotent.
+  const updated = await sql`
+    UPDATE orders
+    SET status = ${nextStatus}, payment_tx_signature = ${parsed.data.signature},
+        paid_at = NOW(),
+        completed_at = CASE WHEN ${nextStatus} = 'completed' THEN NOW() ELSE NULL END
+    WHERE id = ${id} AND status = 'pending'
+    RETURNING id
+  `;
+  if (updated.length > 0 && nextStatus === "completed" && order.product_id) {
+    await sql`
+      UPDATE products SET total_purchases = total_purchases + 1 WHERE id = ${order.product_id}
+    `;
+    await sql`
+      UPDATE users
+      SET total_earned_lamports = total_earned_lamports + ${order.amount_lamports},
+          completed_orders = completed_orders + 1
+      WHERE id = ${order.seller_id}
+    `;
+  }
+
+  return NextResponse.json({ ok: true, status: nextStatus });
 }

@@ -3,6 +3,7 @@ import { sql } from "@/lib/db";
 import { buildSiwsMessage, verifySiwsSignature } from "@/lib/auth/siws";
 import { createSession } from "@/lib/auth/session";
 import { upsertUserByWallet } from "@/lib/auth/current-user";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -10,6 +11,8 @@ const DOMAIN = "solgig.xyz";
 
 // Verify a signed SIWS message, burn the nonce, and open a session.
 export async function POST(req: NextRequest) {
+  const limited = rateLimit({ req, key: "verify", limit: 10, windowMs: 60_000 });
+  if (limited) return limited;
   const { wallet, signature, nonce } = await req.json().catch(() => ({}));
   if (!wallet || !signature || !nonce) {
     return NextResponse.json(
@@ -50,8 +53,19 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Burn the nonce so it cannot be replayed.
-  await sql`UPDATE auth_nonces SET used = true WHERE nonce = ${nonce}`;
+  // Burn the nonce atomically; if another request got here first, the
+  // guarded update returns nothing and this attempt is rejected.
+  const burned = await sql`
+    UPDATE auth_nonces SET used = true
+    WHERE nonce = ${nonce} AND used = false
+    RETURNING nonce
+  `;
+  if (burned.length === 0) {
+    return NextResponse.json(
+      { error: { code: "bad_nonce", message: "That sign-in request expired. Try again." } },
+      { status: 400 },
+    );
+  }
 
   const user = await upsertUserByWallet(wallet);
   await createSession({ userId: user.id, wallet });

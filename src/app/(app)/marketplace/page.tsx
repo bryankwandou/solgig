@@ -68,12 +68,20 @@ export default function MarketplacePage() {
             <HoverTilt>
               <Link href={`/marketplace/${p.slug}`}>
                 <div className="h-full rounded-[var(--radius-md)] border p-5" style={{ background: "var(--surface)" }}>
-                  <div
-                    className="mb-4 grid h-32 place-items-center rounded-[var(--radius-sm)] text-2xl font-bold text-black"
-                    style={{ background: "var(--brand-grad)" }}
-                  >
-                    {p.title.slice(0, 1).toUpperCase()}
-                  </div>
+                  {p.thumbnail_url ? (
+                    <img
+                      src={p.thumbnail_url}
+                      alt={p.title}
+                      className="mb-4 h-32 w-full rounded-[var(--radius-sm)] object-cover"
+                    />
+                  ) : (
+                    <div
+                      className="mb-4 grid h-32 place-items-center rounded-[var(--radius-sm)] text-2xl font-bold text-black"
+                      style={{ background: "var(--brand-grad)" }}
+                    >
+                      {p.title.slice(0, 1).toUpperCase()}
+                    </div>
+                  )}
                   <div className="text-xs uppercase tracking-wide text-[var(--text-mut)]">
                     {p.product_type}
                   </div>
