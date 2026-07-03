@@ -9,8 +9,14 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params;
+  // file_url is deliberately excluded: paid files are only handed out
+  // through the entitlement-checked order download endpoint.
   const rows = await sql`
-    SELECT p.*, u.username AS seller_username, u.display_name AS seller_name,
+    SELECT p.id, p.slug, p.title, p.description, p.short_description,
+           p.thumbnail_url, p.product_type, p.tags, p.price_lamports,
+           p.is_published, p.total_purchases, p.rating_average, p.rating_count,
+           p.view_count, p.created_at,
+           u.username AS seller_username, u.display_name AS seller_name,
            u.wallet_address AS seller_wallet, u.avatar_url AS seller_avatar,
            u.reputation_score AS seller_reputation
     FROM products p

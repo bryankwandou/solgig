@@ -3,6 +3,7 @@ import { z } from "zod";
 import { sql } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { slugify } from "@/lib/utils";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -32,6 +33,8 @@ const CreateService = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const limited = rateLimit({ req, key: "services:post", limit: 10, windowMs: 60_000 });
+  if (limited) return limited;
   const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json(

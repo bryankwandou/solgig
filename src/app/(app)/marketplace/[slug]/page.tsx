@@ -17,13 +17,13 @@ type Product = {
   slug: string;
   title: string;
   description: string;
+  thumbnail_url: string | null;
   product_type: string;
   tags: string[];
   price_lamports: number;
   total_purchases: number;
   rating_average: number;
   rating_count: number;
-  file_url: string | null;
   seller_username: string | null;
   seller_name: string | null;
   seller_wallet: string;
@@ -72,12 +72,20 @@ export default function ProductPage() {
   return (
     <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
       <div>
-        <div
-          className="grid h-56 place-items-center rounded-[var(--radius-lg)] text-5xl font-bold text-black"
-          style={{ background: "var(--brand-grad)" }}
-        >
-          {product.title.slice(0, 1).toUpperCase()}
-        </div>
+        {product.thumbnail_url ? (
+          <img
+            src={product.thumbnail_url}
+            alt={product.title}
+            className="h-56 w-full rounded-[var(--radius-lg)] object-cover"
+          />
+        ) : (
+          <div
+            className="grid h-56 place-items-center rounded-[var(--radius-lg)] text-5xl font-bold text-black"
+            style={{ background: "var(--brand-grad)" }}
+          >
+            {product.title.slice(0, 1).toUpperCase()}
+          </div>
+        )}
         <h1 className="font-display mt-6 text-3xl font-bold">{product.title}</h1>
         <div className="mt-2 flex items-center gap-3 text-sm text-[var(--text-mut)]">
           <span>
@@ -203,7 +211,7 @@ function BuyPanel({ product }: { product: Product }) {
       </p>
 
       {state.step === "done" ? (
-        <Success orderId={state.orderId} signature={state.signature} fileUrl={product.file_url} />
+        <Success orderId={state.orderId} signature={state.signature} />
       ) : (
         <>
           <button
@@ -250,16 +258,24 @@ function BuyPanel({ product }: { product: Product }) {
 function Success({
   orderId,
   signature,
-  fileUrl,
 }: {
   orderId: string;
   signature: string;
-  fileUrl: string | null;
 }) {
   const [rating, setRating] = useState(0);
   const [body, setBody] = useState("");
   const [sent, setSent] = useState(false);
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
   const net = process.env.NEXT_PUBLIC_SOLANA_NETWORK ?? "devnet";
+
+  // The file link comes from the entitlement-checked endpoint, so only
+  // a buyer with a completed order ever sees it.
+  useEffect(() => {
+    fetch(`/api/orders/${orderId}/download`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setFileUrl(d?.fileUrl ?? null))
+      .catch(() => {});
+  }, [orderId]);
 
   async function review() {
     if (!rating) return;
