@@ -5,10 +5,10 @@ import { rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
-// POST /api/users/[id]/follow — toggle following. Returns the new state.
+// POST /api/users/[handle]/follow — toggle following by user id. Returns the new state.
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ handle: string }> },
 ) {
   const limited = rateLimit({ req, key: "follow", limit: 30, windowMs: 60_000 });
   if (limited) return limited;
@@ -19,7 +19,13 @@ export async function POST(
       { status: 401 },
     );
   }
-  const { id } = await params;
+  const { handle: id } = await params;
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+    return NextResponse.json(
+      { error: { code: "not_found", message: "That account does not exist." } },
+      { status: 404 },
+    );
+  }
   if (id === user.id) {
     return NextResponse.json(
       { error: { code: "self_follow", message: "Following yourself does nothing." } },
