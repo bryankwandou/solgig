@@ -15,6 +15,7 @@ type Post = {
   author_username: string | null;
   author_name: string | null;
   author_wallet: string;
+  author_avatar: string | null;
   product_slug: string | null;
   product_title: string | null;
   product_price: number | null;
@@ -26,13 +27,32 @@ export default function FeedPage() {
   const [loading, setLoading] = useState(true);
   const [text, setText] = useState("");
   const [posting, setPosting] = useState(false);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const load = useCallback(() => {
     fetch("/api/posts")
       .then((r) => r.json())
-      .then((d) => setPosts(d.items ?? []))
+      .then((d) => {
+        setPosts(d.items ?? []);
+        setCursor(d.nextCursor ?? null);
+      })
       .finally(() => setLoading(false));
   }, []);
+
+  async function loadMore() {
+    if (!cursor || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const d = await fetch(`/api/posts?cursor=${encodeURIComponent(cursor)}`).then(
+        (r) => r.json(),
+      );
+      setPosts((prev) => [...prev, ...(d.items ?? [])]);
+      setCursor(d.nextCursor ?? null);
+    } finally {
+      setLoadingMore(false);
+    }
+  }
 
   useEffect(() => load(), [load]);
 
@@ -98,14 +118,38 @@ export default function FeedPage() {
             <PostCard post={p} canLike={!!user} />
           </Reveal>
         ))}
+        {cursor && (
+          <button
+            onClick={loadMore}
+            disabled={loadingMore}
+            className="w-full rounded-full border py-2.5 text-sm text-[var(--text-mut)] transition-colors hover:text-[var(--text)] disabled:opacity-40"
+          >
+            {loadingMore ? "Loading…" : "Load more"}
+          </button>
+        )}
       </div>
     </div>
   );
 }
 
+type Comment = {
+  id: string;
+  content: string;
+  created_at: string;
+  author_username: string | null;
+  author_name: string | null;
+  author_wallet: string;
+};
+
 function PostCard({ post, canLike }: { post: Post; canLike: boolean }) {
   const [likes, setLikes] = useState(post.likes_count);
+  const [commentsOpen, setCommentsOpen] = useState(false);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [commentCount, setCommentCount] = useState(post.comments_count);
+  const [commentText, setCommentText] = useState("");
+  const [sending, setSending] = useState(false);
   const name = post.author_name || post.author_username || shortAddress(post.author_wallet);
+  const handle = post.author_username || post.author_wallet;
 
   async function toggleLike() {
     if (!canLike) return;
@@ -116,22 +160,59 @@ function PostCard({ post, canLike }: { post: Post; canLike: boolean }) {
     }
   }
 
+  async function openComments() {
+    const next = !commentsOpen;
+    setCommentsOpen(next);
+    if (next && comments.length === 0 && commentCount > 0) {
+      const d = await fetch(`/api/posts/${post.id}/comments`).then((r) => r.json());
+      setComments(d.items ?? []);
+    }
+  }
+
+  async function sendComment() {
+    if (!commentText.trim() || sending) return;
+    setSending(true);
+    try {
+      const res = await fetch(`/api/posts/${post.id}/comments`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ content: commentText.trim() }),
+      });
+      if (res.ok) {
+        const d = await res.json();
+        setComments((prev) => [...prev, d.comment]);
+        setCommentCount((c) => c + 1);
+        setCommentText("");
+      }
+    } finally {
+      setSending(false);
+    }
+  }
+
   return (
     <article className="rounded-[var(--radius-md)] border p-4" style={{ background: "var(--surface)" }}>
-      <div className="flex items-center gap-3">
-        <div
-          className="grid h-9 w-9 place-items-center rounded-full text-sm font-bold text-black"
-          style={{ background: "var(--brand-grad)" }}
-        >
-          {name.slice(0, 1).toUpperCase()}
-        </div>
+      <a href={`/u/${handle}`} className="flex items-center gap-3">
+        {post.author_avatar ? (
+          <img
+            src={post.author_avatar}
+            alt={name}
+            className="h-9 w-9 rounded-full object-cover"
+          />
+        ) : (
+          <div
+            className="grid h-9 w-9 place-items-center rounded-full text-sm font-bold text-black"
+            style={{ background: "var(--brand-grad)" }}
+          >
+            {name.slice(0, 1).toUpperCase()}
+          </div>
+        )}
         <div className="leading-tight">
-          <div className="text-sm font-medium">{name}</div>
+          <div className="text-sm font-medium hover:underline">{name}</div>
           <div className="font-mono text-xs text-[var(--text-mut)]">
             {shortAddress(post.author_wallet)}
           </div>
         </div>
-      </div>
+      </a>
       <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed">{post.content}</p>
       {post.product_slug && (
         <a
@@ -144,12 +225,61 @@ function PostCard({ post, canLike }: { post: Post; canLike: boolean }) {
           </span>
         </a>
       )}
-      <div className="mt-3 flex items-center gap-3 text-sm text-[var(--text-mut)]">
-        <button onClick={toggleLike} className="flex items-center gap-2">
-          <LikeBurst />
+      <div className="mt-3 flex items-center gap-4 text-sm text-[var(--text-mut)]">
+        <span className="flex items-center gap-2">
+          <button onClick={toggleLike} className="flex items-center gap-2">
+            <LikeBurst />
+          </button>
+          {likes}
+        </span>
+        <button onClick={openComments} className="hover:text-[var(--text)]">
+          {commentCount} comments
         </button>
-        <span>{likes}</span>
       </div>
+
+      {commentsOpen && (
+        <div className="mt-3 border-t pt-3">
+          {comments.map((c) => {
+            const cname =
+              c.author_name || c.author_username || shortAddress(c.author_wallet);
+            return (
+              <div key={c.id} className="mt-2 text-sm">
+                <a
+                  href={`/u/${c.author_username || c.author_wallet}`}
+                  className="font-medium hover:underline"
+                >
+                  {cname}
+                </a>{" "}
+                <span className="text-[var(--text-mut)]">{c.content}</span>
+              </div>
+            );
+          })}
+          {canLike ? (
+            <div className="mt-3 flex gap-2">
+              <input
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && sendComment()}
+                maxLength={500}
+                placeholder="Add a comment"
+                className="flex-1 rounded-full border bg-transparent px-3 py-1.5 text-sm outline-none placeholder:text-[var(--text-mut)]"
+              />
+              <button
+                onClick={sendComment}
+                disabled={sending || !commentText.trim()}
+                className="rounded-full px-4 py-1.5 text-sm font-medium text-black disabled:opacity-40"
+                style={{ background: "var(--brand-grad)" }}
+              >
+                Send
+              </button>
+            </div>
+          ) : (
+            <p className="mt-3 text-xs text-[var(--text-mut)]">
+              Connect a wallet to join the conversation.
+            </p>
+          )}
+        </div>
+      )}
     </article>
   );
 }

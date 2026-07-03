@@ -55,15 +55,19 @@ export async function buildPaymentTransaction(params: {
 }
 
 /**
- * Confirm a signature landed on-chain and moved at least `minLamports`
- * from buyer to seller. This is the server's source of truth; the client
- * is never trusted to assert a payment succeeded.
+ * Confirm a signature landed on-chain and actually paid for the order:
+ * the buyer signed and spent at least the full amount, the seller gained
+ * their cut, and (when configured) the treasury received the platform fee.
+ * This is the server's source of truth; the client is never trusted to
+ * assert a payment succeeded.
  */
 export async function verifyPayment(params: {
   signature: string;
   buyer: string;
   seller: string;
-  minLamports: number;
+  sellerMinLamports: number;
+  treasury?: string | null;
+  feeLamports?: number;
 }): Promise<{ ok: boolean; reason?: string }> {
   const connection = getConnection();
   const tx = await connection.getTransaction(params.signature, {
@@ -73,7 +77,8 @@ export async function verifyPayment(params: {
   if (!tx) return { ok: false, reason: "not_found" };
   if (tx.meta?.err) return { ok: false, reason: "tx_failed" };
 
-  const keys = tx.transaction.message
+  const message = tx.transaction.message;
+  const keys = message
     .getAccountKeys()
     .staticAccountKeys.map((k) => k.toBase58());
   const sellerIdx = keys.indexOf(params.seller);
@@ -81,12 +86,34 @@ export async function verifyPayment(params: {
   if (sellerIdx < 0 || buyerIdx < 0) {
     return { ok: false, reason: "party_missing" };
   }
+  // The buyer must have signed this transaction, not merely appear in it.
+  const numSigners = message.header.numRequiredSignatures;
+  if (buyerIdx >= numSigners) {
+    return { ok: false, reason: "buyer_not_signer" };
+  }
 
   const pre = tx.meta?.preBalances ?? [];
   const post = tx.meta?.postBalances ?? [];
   const sellerGain = (post[sellerIdx] ?? 0) - (pre[sellerIdx] ?? 0);
-  if (sellerGain < params.minLamports) {
+  if (sellerGain < params.sellerMinLamports) {
     return { ok: false, reason: "amount_short" };
+  }
+
+  const fee = params.feeLamports ?? 0;
+  if (params.treasury && fee > 0) {
+    const treasuryIdx = keys.indexOf(params.treasury);
+    const treasuryGain =
+      treasuryIdx >= 0 ? (post[treasuryIdx] ?? 0) - (pre[treasuryIdx] ?? 0) : 0;
+    if (treasuryGain < fee) {
+      return { ok: false, reason: "fee_missing" };
+    }
+  }
+
+  // The buyer's balance must drop by at least the full order amount
+  // (they also pay the network fee, so the drop will exceed it).
+  const buyerSpent = (pre[buyerIdx] ?? 0) - (post[buyerIdx] ?? 0);
+  if (buyerSpent < params.sellerMinLamports + fee) {
+    return { ok: false, reason: "buyer_underpaid" };
   }
   return { ok: true };
 }

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { sql } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { slugify } from "@/lib/utils";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -14,7 +15,7 @@ export async function GET(req: NextRequest) {
   const limit = 24;
   const offset = (page - 1) * limit;
 
-  const like = `%${q}%`;
+  const like = `%${q.replace(/([%_\\])/g, "\\$1")}%`;
   const items = await sql`
     SELECT p.id, p.slug, p.title, p.short_description, p.thumbnail_url,
            p.product_type, p.tags, p.price_lamports, p.total_purchases,
@@ -44,6 +45,8 @@ const CreateProduct = z.object({
 
 // POST /api/products — create a listing for the signed-in seller.
 export async function POST(req: NextRequest) {
+  const limited = rateLimit({ req, key: "listing", limit: 10, windowMs: 60_000 });
+  if (limited) return limited;
   const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json(
