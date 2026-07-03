@@ -2,6 +2,10 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 
 const COOKIE = "solgig_session";
+
+if (!process.env.SESSION_SECRET && process.env.NODE_ENV === "production") {
+  throw new Error("SESSION_SECRET must be set in production");
+}
 const secret = new TextEncoder().encode(
   process.env.SESSION_SECRET ?? "dev-insecure-secret-change-me",
 );

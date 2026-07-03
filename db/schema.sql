@@ -154,6 +154,10 @@ CREATE INDEX IF NOT EXISTS idx_orders_seller ON orders(seller_id, created_at DES
 
 CREATE SEQUENCE IF NOT EXISTS order_seq START 1;
 
+-- Escrow support for service orders (safe to re-run).
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS escrow BOOLEAN DEFAULT false;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS payout_tx_signature TEXT;
+
 -- =========================================
 -- TRANSACTIONS (mirror of on-chain payments)
 -- =========================================
@@ -183,3 +187,14 @@ CREATE TABLE IF NOT EXISTS reviews (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE (order_id, reviewer_id)
 );
+CREATE INDEX IF NOT EXISTS idx_reviews_product ON reviews(product_id, created_at DESC);
+
+-- =========================================
+-- SUPPORTING INDEXES for hot query paths
+-- =========================================
+CREATE INDEX IF NOT EXISTS idx_transactions_order ON transactions(order_id);
+CREATE INDEX IF NOT EXISTS idx_comments_post ON post_comments(post_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_follows_following ON follows(following_id);
+CREATE INDEX IF NOT EXISTS idx_services_published ON services(is_published, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_posts_author ON posts(author_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_nonces_expiry ON auth_nonces(expires_at);

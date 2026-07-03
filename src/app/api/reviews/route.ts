@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { sql } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth/current-user";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -13,6 +14,8 @@ const CreateReview = z.object({
 
 // POST /api/reviews — only the buyer of a completed order may review it.
 export async function POST(req: NextRequest) {
+  const limited = rateLimit({ req, key: "review", limit: 10, windowMs: 60_000 });
+  if (limited) return limited;
   const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json(
@@ -35,7 +38,7 @@ export async function POST(req: NextRequest) {
   `) as {
     buyer_id: string;
     seller_id: string;
-    product_id: string;
+    product_id: string | null;
     status: string;
   }[];
   const order = rows[0];
@@ -46,23 +49,34 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  await sql`
+  const inserted = await sql`
     INSERT INTO reviews (order_id, reviewer_id, reviewee_id, product_id, rating, body)
     VALUES (${orderId}, ${user.id}, ${order.seller_id}, ${order.product_id}, ${rating}, ${body ?? null})
     ON CONFLICT (order_id, reviewer_id) DO NOTHING
+    RETURNING id
   `;
+  if (inserted.length === 0) {
+    // Already reviewed — nothing to recount, and no reputation to re-award.
+    return NextResponse.json(
+      { error: { code: "duplicate", message: "You already reviewed this order." } },
+      { status: 409 },
+    );
+  }
 
-  // Recompute the product rating aggregate from its reviews.
-  await sql`
-    UPDATE products p SET
-      rating_count = sub.c,
-      rating_average = sub.a
-    FROM (
-      SELECT product_id, COUNT(*)::int AS c, ROUND(AVG(rating)::numeric, 2) AS a
-      FROM reviews WHERE product_id = ${order.product_id} GROUP BY product_id
-    ) sub
-    WHERE p.id = sub.product_id
-  `;
+  // Recompute the product rating aggregate from its reviews (service
+  // orders carry no product, so there is nothing to recount for them).
+  if (order.product_id) {
+    await sql`
+      UPDATE products p SET
+        rating_count = sub.c,
+        rating_average = sub.a
+      FROM (
+        SELECT product_id, COUNT(*)::int AS c, ROUND(AVG(rating)::numeric, 2) AS a
+        FROM reviews WHERE product_id = ${order.product_id} GROUP BY product_id
+      ) sub
+      WHERE p.id = sub.product_id
+    `;
+  }
   // Mirror a simple reputation signal onto the seller.
   await sql`
     UPDATE users SET reputation_score = reputation_score + ${rating}
