@@ -24,12 +24,25 @@ const NAV = [
   { href: "/dashboard", label: "Dashboard" },
 ];
 
+const NETWORK = process.env.NEXT_PUBLIC_SOLANA_NETWORK ?? "devnet";
+const IS_MAINNET = NETWORK === "mainnet-beta";
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, signOut, signingIn } = useAuth();
 
   return (
     <div className="min-h-screen">
+      <div
+        className={cn(
+          "px-5 py-1.5 text-center text-xs font-medium",
+          IS_MAINNET ? "bg-[#9945FF] text-white" : "bg-amber-400 text-black",
+        )}
+      >
+        {IS_MAINNET
+          ? "Mainnet — real SOL, real payments. Transactions cannot be reversed."
+          : "Devnet demo — test SOL only, no real money changes hands."}
+      </div>
       <header
         className="sticky top-0 z-40 border-b"
         style={{
