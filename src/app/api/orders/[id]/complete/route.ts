@@ -49,10 +49,11 @@ export async function POST(
   let payoutSignature: string | null = null;
   if (order.escrow) {
     try {
+      // BIGINT columns arrive as strings from the driver; coerce before math.
       payoutSignature = await releaseEscrow({
         seller: order.seller_wallet,
-        amountLamports: order.amount_lamports,
-        feeLamports: order.platform_fee_lamports,
+        amountLamports: Number(order.amount_lamports),
+        feeLamports: Number(order.platform_fee_lamports),
       });
     } catch {
       // Put the order back so the buyer can retry the release.

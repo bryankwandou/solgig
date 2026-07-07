@@ -71,16 +71,13 @@ export function Hero() {
           <Reveal dir="up" delay={0.35}>
             <dl className="mt-12 grid max-w-lg grid-cols-3 gap-6">
               <Stat
-                value={<CounterUp to={4820} prefix="" suffix=" SOL" />}
-                label={copy.hero.statSettled}
+                value={<CounterUp to={2.5} decimals={1} suffix="%" />}
+                label={copy.hero.statFee}
               />
+              <Stat value={<span>~1s</span>} label={copy.hero.statSettle} />
               <Stat
-                value={<CounterUp to={1340} suffix="+" />}
-                label={copy.hero.statCreators}
-              />
-              <Stat
-                value={<span>~1s</span>}
-                label={copy.hero.statMedian}
+                value={<CounterUp to={100} suffix="%" />}
+                label={copy.hero.statReceipts}
               />
             </dl>
           </Reveal>

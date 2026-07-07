@@ -44,18 +44,6 @@ const connection = new Connection(RPC, "confirmed");
 const agent = Keypair.generate();
 log("agent", `New agent wallet: ${agent.publicKey.toBase58()}`);
 
-// Fund it from the devnet escrow wallet (faucet SOL).
-const funder = Keypair.fromSecretKey(bs58.decode(envVal("ESCROW_SECRET_KEY")));
-const fundTx = new Transaction().add(
-  SystemProgram.transfer({
-    fromPubkey: funder.publicKey,
-    toPubkey: agent.publicKey,
-    lamports: 200_000_000, // 0.2 SOL, plenty for one purchase
-  }),
-);
-await sendAndConfirmTransaction(connection, fundTx, [funder]);
-log("agent", "Funded with 0.2 devnet SOL");
-
 // Cookie jar — the agent keeps its session like any other API client.
 let cookie = "";
 async function api(path, opts = {}) {
@@ -74,18 +62,36 @@ async function api(path, opts = {}) {
   return body;
 }
 
-// 1. Read the catalog.
+// 1. Read the catalog and pick the cheapest thing it can actually receive.
 const catalog = await api("/api/agent/catalog");
-const product = catalog.products.find((p) => p.deliverable_file && p.price_lamports > 0);
+const product = catalog.products
+  .filter((p) => p.deliverable_file && p.price_lamports > 0)
+  .sort((a, b) => a.price_lamports - b.price_lamports)[0];
 if (!product) throw new Error("No purchasable product with a file in the catalog");
 log(
   "catalog",
   `Picked "${product.title}" by @${product.seller} — ${product.price_lamports / 1e9} SOL`,
 );
 
+// Fund the agent from the devnet escrow wallet (faucet SOL): price + fee + rent/fees headroom.
+const budget = Math.ceil(product.price_lamports * 1.03) + 10_000_000;
+const funder = Keypair.fromSecretKey(bs58.decode(envVal("ESCROW_SECRET_KEY")));
+const fundTx = new Transaction().add(
+  SystemProgram.transfer({
+    fromPubkey: funder.publicKey,
+    toPubkey: agent.publicKey,
+    lamports: budget,
+  }),
+);
+await sendAndConfirmTransaction(connection, fundTx, [funder]);
+log("agent", `Funded with ${(budget / 1e9).toFixed(3)} devnet SOL`);
+
 // 2. Authenticate: SIWS with the agent's own key.
 const wallet = agent.publicKey.toBase58();
-const { nonce, issuedAt } = await api(`/api/auth/nonce?wallet=${wallet}`);
+const { nonce, issuedAt } = await api("/api/auth/nonce", {
+  method: "POST",
+  body: JSON.stringify({ wallet }),
+});
 const message = [
   `solgig.xyz wants you to sign in with your Solana account:`,
   wallet,

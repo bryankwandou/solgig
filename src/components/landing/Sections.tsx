@@ -172,6 +172,79 @@ function Figure({ value, label }: { value: React.ReactNode; label: string }) {
   );
 }
 
+/* Agents — the thesis section: a terminal replays a real autonomous purchase. */
+const AGENT_TRACE = [
+  { t: "$ node agent-demo.mjs", d: 0 },
+  { t: "[agent]   new wallet GHosw…WMs1w — no history, no account", d: 900 },
+  { t: "[catalog] GET /api/agent/catalog → picked \"Pixel Icon Pack Vol. 2\" (0.4 SOL)", d: 1900 },
+  { t: "[auth]    signed nonce with own key → session open", d: 2900 },
+  { t: "[order]   SG-2026-000001 created", d: 3700 },
+  { t: "[pay]     transfer sent, confirmed on Solana devnet", d: 4700 },
+  { t: "[verify]  server checked signer, amounts, balances on-chain", d: 5700 },
+  { t: "[collect] download unlocked — purchase complete, no human involved", d: 6700 },
+] as const;
+
+export function AgentSection() {
+  return (
+    <section id="agents" className="mx-auto max-w-[1200px] px-5 py-24">
+      <SectionHeading title={copy.agents.title} sub={copy.agents.sub} />
+      <div className="mt-12 grid items-start gap-8 lg:grid-cols-[1fr_1.1fr]">
+        <Stagger className="grid gap-5">
+          {copy.agents.points.map((p, i) => (
+            <StaggerItem key={i}>
+              <GlowCard className="p-6">
+                <h3 className="font-display text-lg font-semibold">{p.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-[var(--text-mut)]">
+                  {p.body}
+                </p>
+              </GlowCard>
+            </StaggerItem>
+          ))}
+        </Stagger>
+        <Reveal dir="left">
+          <AgentTerminal />
+          <p className="mt-3 text-center text-xs text-[var(--text-mut)]">
+            {copy.agents.demo}
+          </p>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+function AgentTerminal() {
+  return (
+    <div
+      className="overflow-hidden rounded-[var(--radius-md)] border font-mono text-[13px] leading-relaxed"
+      style={{ background: "oklch(0.13 0.01 280)" }}
+    >
+      <div className="flex items-center gap-1.5 border-b px-4 py-2.5">
+        <span className="h-2.5 w-2.5 rounded-full" style={{ background: "oklch(0.6 0.18 25)" }} />
+        <span className="h-2.5 w-2.5 rounded-full" style={{ background: "oklch(0.75 0.15 90)" }} />
+        <span className="h-2.5 w-2.5 rounded-full" style={{ background: "var(--brand-mint)" }} />
+        <span className="ml-3 text-xs text-[var(--text-mut)]">agent-demo — devnet</span>
+      </div>
+      <div className="min-h-[290px] px-4 py-4">
+        {AGENT_TRACE.map((line, i) => (
+          <Reveal key={i} delay={line.d / 1000} dir="up">
+            <div className="whitespace-pre-wrap py-0.5">
+              <span style={{ color: i === 0 ? "var(--brand-mint)" : undefined }}>
+                {line.t}
+              </span>
+            </div>
+          </Reveal>
+        ))}
+        <Reveal delay={7.4} dir="up">
+          <div className="mt-2 flex items-center gap-2 text-xs" style={{ color: "var(--brand-mint)" }}>
+            <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full" style={{ background: "var(--brand-mint)" }} />
+            replayed from a real devnet transaction
+          </div>
+        </Reveal>
+      </div>
+    </div>
+  );
+}
+
 /* Trust — the escrow flow, nodes light up in sequence. */
 export function TrustFlow() {
   return (

@@ -4,6 +4,7 @@ import { ScrollProgress } from "@/components/motion";
 import {
   ProofStrip,
   HowItWorks,
+  AgentSection,
   SellersBuyers,
   TrustFlow,
   FeedPreview,
@@ -19,6 +20,7 @@ export default function LandingPage() {
       <Hero />
       <ProofStrip />
       <HowItWorks />
+      <AgentSection />
       <SellersBuyers />
       <TrustFlow />
       <FeedPreview />
