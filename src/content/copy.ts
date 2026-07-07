@@ -1,19 +1,19 @@
 /**
  * Every user-facing string lives here so the wording can be reviewed in one place.
  * Rules: no emoji, plain spoken English, one idea per line, written to "you".
- * See BUILD_PLAN.md section 5 and SOLANAFLOW_MEGAPROMPT.md section 23.
+ * Nothing on this page claims traction we do not have.
  */
 
 export const copy = {
   brand: {
     name: "SolGig",
-    tagline: "Sell your work on Solana. Get paid the second someone buys.",
+    tagline: "The marketplace both people and AI agents can buy from.",
   },
 
   nav: {
     links: [
       { label: "How it works", href: "#how" },
-      { label: "For sellers", href: "#sellers" },
+      { label: "For agents", href: "#agents" },
       { label: "How payment clears", href: "#trust" },
       { label: "From the feed", href: "#feed" },
     ],
@@ -22,39 +22,59 @@ export const copy = {
   },
 
   hero: {
-    eyebrow: "Built on Solana",
-    title: "Sell your work. Keep what you earn.",
-    sub: "List a template, a track, a design, or a few hours of your time. When someone buys, the payment lands in your wallet a moment later. No bank sits in the middle, and no platform holds your money.",
+    eyebrow: "Live on Solana devnet and mainnet",
+    title: "Your next customer might not be human.",
+    sub: "SolGig is a marketplace where anyone holding a Solana keypair can buy and sell — designers, developers, musicians, and the AI agents working for them. An agent can't open a bank account or pass card checks. It can sign a transaction. That's all it needs here.",
     primary: "Start selling",
-    secondary: "Look around the feed",
-    statSettled: "Settled this week",
-    statCreators: "Creators listing now",
-    statMedian: "Median time to payout",
+    secondary: "See the agent buy something",
+    statFee: "Platform fee, nothing hidden",
+    statSettle: "Typical time for payment to clear",
+    statReceipts: "Receipts you can check on-chain",
   },
 
   proof: {
-    line: "People already building here",
+    line: "Every claim below is running right now, on both networks",
   },
 
   how: {
-    title: "Three steps from idea to paid",
+    title: "Three steps from listing to paid",
     steps: [
       {
         k: "01",
         title: "List what you make",
-        body: "Upload a file or describe a service. Set your price in SOL or USDC. You are live in a couple of minutes.",
+        body: "Upload a file or describe a service. Set your price in SOL. Your listing goes into the human storefront and the machine-readable catalog at the same time.",
       },
       {
         k: "02",
-        title: "Share it in the feed",
-        body: "Post a short clip or a photo. Followers see it, react to it, and tap straight through to buy.",
+        title: "Get found by anyone — or anything",
+        body: "People browse the feed and marketplace. Agents read the catalog endpoint, compare prices, and pick on their own. You don't do anything different for either.",
       },
       {
         k: "03",
         title: "Get paid on delivery",
-        body: "The buyer's funds wait in escrow. The moment you deliver and they accept, the balance moves to your wallet.",
+        body: "Digital goods unlock the moment payment is verified on-chain. Service money waits in escrow and moves to you when the buyer signs off.",
       },
     ],
+  },
+
+  agents: {
+    title: "Built so a machine can be a customer",
+    sub: "One public endpoint describes every listing and the exact steps to authenticate, pay, and collect. No SDK to install, no API key to beg for.",
+    points: [
+      {
+        title: "Sign in with a keypair",
+        body: "Auth is a signed nonce. If you can sign a Solana message, you have an account. That covers every wallet — and every agent.",
+      },
+      {
+        title: "Self-describing catalog",
+        body: "GET /api/agent/catalog returns every product and service with prices, plus the full recipe for the purchase flow. An agent that has never seen SolGig can complete a purchase from that one response.",
+      },
+      {
+        title: "Nothing taken on trust",
+        body: "When a buyer says it paid, the server pulls the transaction from the chain and checks the signer, the amounts, and the balance changes itself. A signature clears exactly one order, ever.",
+      },
+    ],
+    demo: "Run the demo: a fresh keypair with no history discovers a product, pays for it, and downloads it. About thirty seconds, no browser, no human.",
   },
 
   sellers: {
@@ -63,7 +83,7 @@ export const copy = {
       heading: "If you sell",
       points: [
         "Keep 97.5 percent of every sale.",
-        "Price in the token you prefer.",
+        "Your listing is visible to human buyers and agent buyers with zero extra work.",
         "Your followers come with you. No one rents your audience back to you.",
       ],
     },
@@ -71,19 +91,19 @@ export const copy = {
       heading: "If you buy",
       points: [
         "Your payment is held until the work arrives.",
-        "Open a dispute if something is wrong, and a reviewer steps in.",
-        "Every receipt is a transaction you can check yourself.",
+        "The server checks every payment against the chain before anything unlocks.",
+        "Every receipt is a transaction you can look up yourself.",
       ],
     },
   },
 
   trust: {
     title: "How a payment actually clears",
-    sub: "Funds move through an on-chain escrow, so both sides know the rules before money changes hands.",
+    sub: "Money moves on Solana, and the order only advances after the server has verified the transfer on-chain — signer, amount, and balance change.",
     nodes: [
-      { title: "Buyer pays", body: "The amount is locked in an escrow account on Solana." },
-      { title: "You deliver", body: "Files or work are handed over through the order." },
-      { title: "Buyer accepts", body: "The escrow releases to your wallet, minus a small fee." },
+      { title: "Buyer pays", body: "One transaction: the price to the seller or escrow, the fee to the platform." },
+      { title: "Server verifies", body: "The transaction is fetched from the chain and checked line by line. No verification, no unlock." },
+      { title: "Work changes hands", body: "Files unlock instantly. Service escrow releases when the buyer accepts, minus the 2.5 percent fee." },
     ],
   },
 
@@ -122,18 +142,18 @@ export const copy = {
   },
 
   finalCta: {
-    title: "Your next sale is one post away",
-    sub: "Set up a listing, share it, and watch the first payment land.",
+    title: "The first marketplace your agent can shop at",
+    sub: "List something today. You might not meet your next buyer, because your next buyer might be a script with a keypair and a budget.",
     primary: "Start selling",
-    secondary: "Read the build plan",
+    secondary: "Read the agent catalog",
   },
 
   footer: {
-    tagline: "A marketplace for people who make things on Solana.",
+    tagline: "A marketplace on Solana for people who make things — and the agents that buy them.",
     columns: [
-      { title: "Product", links: ["Feed", "Marketplace", "Services", "Jobs"] },
-      { title: "Build", links: ["Docs", "Status", "Changelog", "Roadmap"] },
-      { title: "Company", links: ["About", "Careers", "Press", "Contact"] },
+      { title: "Product", links: ["Feed", "Marketplace", "Services", "Orders"] },
+      { title: "Build", links: ["Agent catalog", "Health", "GitHub", "Roadmap"] },
+      { title: "Company", links: ["About", "Contact"] },
     ],
     legal: "SolGig runs on Solana. Payment is on-chain and final once an order is accepted.",
   },

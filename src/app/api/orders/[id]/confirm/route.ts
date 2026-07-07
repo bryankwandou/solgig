@@ -71,16 +71,18 @@ export async function POST(
   }
   const treasury = process.env.NEXT_PUBLIC_PLATFORM_TREASURY || null;
   const payTo = escrowAddress ?? order.seller_wallet;
-  const sellerMin = escrowAddress
-    ? order.amount_lamports
-    : order.amount_lamports - order.platform_fee_lamports;
+  // BIGINT columns arrive as strings from the driver; without Number() the
+  // additions inside verifyPayment silently concatenate and reject everyone.
+  const amount = Number(order.amount_lamports);
+  const platformFee = Number(order.platform_fee_lamports);
+  const sellerMin = escrowAddress ? amount : amount - platformFee;
   const check = await verifyPayment({
     signature: parsed.data.signature,
     buyer: order.buyer_wallet,
     seller: payTo,
     sellerMinLamports: sellerMin,
     treasury: escrowAddress ? null : treasury,
-    feeLamports: escrowAddress ? 0 : order.platform_fee_lamports,
+    feeLamports: escrowAddress ? 0 : platformFee,
   });
   if (!check.ok) {
     return NextResponse.json(
