@@ -102,7 +102,9 @@ export async function POST(req: NextRequest) {
 
   const feeBps = Number(process.env.NEXT_PUBLIC_PLATFORM_FEE_BPS ?? 250);
   const treasury = process.env.NEXT_PUBLIC_PLATFORM_TREASURY || null;
-  const fee = treasury ? Math.floor((listing.price_lamports * feeBps) / 10000) : 0;
+  // BIGINT columns arrive as strings from the driver; coerce before math.
+  const price = Number(listing.price_lamports);
+  const fee = treasury ? Math.floor((price * feeBps) / 10000) : 0;
 
   // Service orders route through the platform escrow wallet when one is
   // configured; the funds only reach the seller after the buyer accepts.
@@ -134,7 +136,7 @@ export async function POST(req: NextRequest) {
           // happens at release time.
           escrow: true,
           payTo: escrowAddress,
-          amountLamports: listing.price_lamports,
+          amountLamports: price,
           feeLamports: 0,
           treasury: null,
         }
@@ -142,7 +144,7 @@ export async function POST(req: NextRequest) {
           escrow: false,
           payTo: listing.seller_wallet,
           sellerWallet: listing.seller_wallet,
-          amountLamports: listing.price_lamports,
+          amountLamports: price,
           feeLamports: fee,
           treasury,
         },
