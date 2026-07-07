@@ -1,9 +1,10 @@
 import { cn } from "@/lib/utils";
 
 /**
- * SG monogram. The S reads as a Solana wave with a lightning kick; the G opens
- * like a coin slot with a token settling in the counter. Speaks "sell and get
- * paid on Solana" from the silhouette alone.
+ * The SolGig mark: three stacked bars — Solana's silhouette — where the
+ * middle bar is a terminal prompt chevron. Top bar leans right, bottom bar
+ * leans left, so the stack reads as an "S". The chevron says the quiet part
+ * out loud: this marketplace has a command line, and machines shop here too.
  */
 export function LogoMark({
   size = 32,
@@ -23,29 +24,41 @@ export function LogoMark({
       aria-label="SolGig"
     >
       <defs>
-        <linearGradient id="sg-grad" x1="0" y1="0" x2="40" y2="40">
+        <linearGradient id="sg-top" x1="8" y1="8" x2="34" y2="14">
           <stop offset="0" stopColor="#9945FF" />
+          <stop offset="1" stopColor="#7C6CFF" />
+        </linearGradient>
+        <linearGradient id="sg-bottom" x1="6" y1="28" x2="32" y2="34">
+          <stop offset="0" stopColor="#2BD9A8" />
           <stop offset="1" stopColor="#14F195" />
         </linearGradient>
       </defs>
-      {/* S wave with a lightning kick on the lower terminal */}
+      {/* top bar — leans right */}
       <path
-        d="M19 7.5c-5 0-8 2.2-8 5.4 0 3 2.4 4.3 6.6 5 3 .5 4 .9 4 1.9 0 1-1.4 1.7-3.6 1.7-2.2 0-3.8-.6-4.9-1.8l-2.4 4.6 4.8-1.1-2.2 4.8"
-        stroke="url(#sg-grad)"
-        strokeWidth="3.1"
+        d="M13 8h18.4a1.3 1.3 0 0 1 .92 2.22l-3.4 3.4a2.6 2.6 0 0 1-1.84.76H8.6a1.3 1.3 0 0 1-.92-2.22l3.4-3.4A2.6 2.6 0 0 1 13 8Z"
+        fill="url(#sg-top)"
+      />
+      {/* middle bar — the prompt chevron, drawn as a single stroke */}
+      <path
+        d="M11.5 16.6 17 20l-5.5 3.4"
+        stroke="currentColor"
+        strokeWidth="3"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      {/* G ring with a coin-slot crossbar */}
       <path
-        d="M33 16.2a8.4 8.4 0 1 0 0 8.2h-4.2"
-        stroke="url(#sg-grad)"
-        strokeWidth="3.1"
+        d="M21.5 23.2h8"
+        stroke="currentColor"
+        strokeWidth="3"
         strokeLinecap="round"
-        strokeLinejoin="round"
+        opacity="0.55"
       />
-      {/* token settling in the counter */}
-      <circle cx="28.6" cy="20.3" r="1.7" fill="#14F195" />
+      {/* bottom bar — leans left */}
+      <path
+        d="M11.9 25.6h18.5a1.3 1.3 0 0 1 .92 2.22l-3.4 3.4a2.6 2.6 0 0 1-1.84.78H7.5a1.3 1.3 0 0 1-.92-2.22l3.4-3.4a2.6 2.6 0 0 1 1.92-.78Z"
+        fill="url(#sg-bottom)"
+        transform="translate(0 2.4)"
+      />
     </svg>
   );
 }
