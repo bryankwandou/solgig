@@ -157,6 +157,9 @@ CREATE SEQUENCE IF NOT EXISTS order_seq START 1;
 -- Escrow support for service orders (safe to re-run).
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS escrow BOOLEAN DEFAULT false;
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS payout_tx_signature TEXT;
+-- When the current payout attempt was signed; a stale 'releasing' order can
+-- only be retried once its blockhash has certainly expired.
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS payout_started_at TIMESTAMPTZ;
 
 -- =========================================
 -- TRANSACTIONS (mirror of on-chain payments)

@@ -115,22 +115,16 @@ const { order, payment } = await api("/api/orders", {
   method: "POST",
   body: JSON.stringify({ productId: product.id }),
 });
-log("order", `Order ${order.order_number} open — paying ${payment.amountLamports} lamports to ${payment.payTo}`);
+log("order", `Order ${order.order_number} open — paying ${payment.amountLamports} lamports in total`);
 
-// 4. Pay on-chain, exactly as the order instructs.
-const payTx = new Transaction().add(
-  SystemProgram.transfer({
-    fromPubkey: agent.publicKey,
-    toPubkey: new PublicKey(payment.payTo),
-    lamports: payment.amountLamports,
-  }),
-);
-if (payment.feeLamports > 0 && payment.treasury) {
+// 4. Pay on-chain, exactly as the order instructs: one transfer per entry.
+const payTx = new Transaction();
+for (const t of payment.transfers) {
   payTx.add(
     SystemProgram.transfer({
       fromPubkey: agent.publicKey,
-      toPubkey: new PublicKey(payment.treasury),
-      lamports: payment.feeLamports,
+      toPubkey: new PublicKey(t.to),
+      lamports: t.lamports,
     }),
   );
 }

@@ -37,13 +37,24 @@ export async function GET() {
     LIMIT 100
   `;
 
+  // Postgres BIGINT and NUMERIC arrive as strings; an agent comparing
+  // prices should get numbers, not "2500000000" > "900000000" === false.
+  const num = (v: unknown) => (v == null ? null : Number(v));
+
   return NextResponse.json({
     marketplace: "SolGig",
     network,
     platform_fee_bps: feeBps,
     currency: "SOL (lamports)",
-    products,
-    services,
+    products: products.map((p) => ({
+      ...p,
+      price_lamports: Number(p.price_lamports),
+      rating_average: num(p.rating_average),
+    })),
+    services: services.map((s) => ({
+      ...s,
+      price_lamports: Number(s.price_lamports),
+    })),
     how_to_transact: {
       summary:
         "Any holder of a Solana keypair — human or agent — can buy here. Authenticate by signing a nonce, open an order, pay the exact on-chain transfer the order specifies, then confirm with the transaction signature. Digital products unlock a download; services hold funds in escrow until you release them.",
@@ -51,14 +62,14 @@ export async function GET() {
         {
           step: 1,
           name: "authenticate",
-          request: `GET ${site}/api/auth/nonce?wallet=<base58 pubkey>`,
-          then: `POST ${site}/api/auth/verify with {wallet, nonce, signature} where signature = base58(ed25519_sign(nonce_message, secret_key)). The response sets an httpOnly session cookie; reuse it on every call below.`,
+          request: `POST ${site}/api/auth/nonce with {"wallet": "<base58 pubkey>"}`,
+          then: `The response carries {nonce, issuedAt, message}. Sign the UTF-8 bytes of message exactly as given with your ed25519 secret key, then POST ${site}/api/auth/verify with {wallet, nonce, signature: base58(signature)}. The response sets an httpOnly session cookie; send it on every call below. Nonces expire after five minutes and work once.`,
         },
         {
           step: 2,
           name: "open_order",
           request: `POST ${site}/api/orders with {"productId": "<id>"} or {"serviceId": "<id>"}`,
-          then: "The response contains payment.payTo, payment.amountLamports, payment.feeLamports and payment.treasury. Build one transaction with a SystemProgram.transfer of amountLamports to payTo, plus (when feeLamports > 0) a second transfer of feeLamports to treasury.",
+          then: "The response contains payment.transfers, a list of {to, lamports}. Build one transaction with one SystemProgram.transfer per entry, exactly as listed, and nothing else. payment.amountLamports is the total you spend, fee included; do not add the fee on top.",
         },
         {
           step: 3,

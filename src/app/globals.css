@@ -130,6 +130,14 @@ body {
   background: oklch(0.55 0.24 295 / 0.35);
 }
 
+/* Keyboard users always see where they are. Unlayered, so it wins over
+   Tailwind's outline-none utility on inputs. */
+:focus-visible {
+  outline: 2px solid var(--brand-mint);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 /* Anyone who asked the system to calm motion gets quiet fades only */
 @media (prefers-reduced-motion: reduce) {
   *,

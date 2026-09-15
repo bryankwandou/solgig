@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/lib/auth/useAuth";
 import { Reveal, LikeBurst } from "@/components/motion";
 import { shortAddress, formatSol } from "@/lib/utils";
+import { useCopy } from "@/lib/i18n";
 
 type Post = {
   id: string;
@@ -23,6 +24,7 @@ type Post = {
 
 export default function FeedPage() {
   const { user } = useAuth();
+  const t = useCopy().pages;
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [text, setText] = useState("");
@@ -73,9 +75,9 @@ export default function FeedPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="font-display text-2xl font-bold">Feed</h1>
+      <h1 className="font-display text-2xl font-bold">{t.feed.title}</h1>
       <p className="mt-1 text-sm text-[var(--text-mut)]">
-        What people are making and selling right now.
+        {t.feed.sub}
       </p>
 
       {user ? (
@@ -85,7 +87,7 @@ export default function FeedPage() {
             onChange={(e) => setText(e.target.value)}
             maxLength={1000}
             rows={3}
-            placeholder="Share something you made, or a slot you are opening up."
+            placeholder={t.feed.placeholder}
             className="w-full resize-none bg-transparent text-sm outline-none placeholder:text-[var(--text-mut)]"
           />
           <div className="mt-2 flex items-center justify-between">
@@ -96,21 +98,21 @@ export default function FeedPage() {
               className="rounded-full px-4 py-2 text-sm font-medium text-black disabled:opacity-40"
               style={{ background: "var(--brand-grad)" }}
             >
-              {posting ? "Posting…" : "Post"}
+              {posting ? t.feed.posting : t.feed.post}
             </button>
           </div>
         </div>
       ) : (
         <div className="mt-6 rounded-[var(--radius-md)] border p-4 text-sm text-[var(--text-mut)]" style={{ background: "var(--surface)" }}>
-          Connect a wallet to post and to react.
+          {t.feed.connect}
         </div>
       )}
 
       <div className="mt-6 space-y-4">
-        {loading && <p className="text-sm text-[var(--text-mut)]">Loading the feed…</p>}
+        {loading && <p className="text-sm text-[var(--text-mut)]">{t.feed.loading}</p>}
         {!loading && posts.length === 0 && (
           <p className="text-sm text-[var(--text-mut)]">
-            Your feed is quiet. Be the first to post something.
+            {t.feed.empty}
           </p>
         )}
         {posts.map((p, i) => (
@@ -124,7 +126,7 @@ export default function FeedPage() {
             disabled={loadingMore}
             className="w-full rounded-full border py-2.5 text-sm text-[var(--text-mut)] transition-colors hover:text-[var(--text)] disabled:opacity-40"
           >
-            {loadingMore ? "Loading…" : "Load more"}
+            {loadingMore ? t.common.loading : t.common.loadMore}
           </button>
         )}
       </div>
@@ -142,6 +144,7 @@ type Comment = {
 };
 
 function PostCard({ post, canLike }: { post: Post; canLike: boolean }) {
+  const t = useCopy().pages;
   const [likes, setLikes] = useState(post.likes_count);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -233,7 +236,7 @@ function PostCard({ post, canLike }: { post: Post; canLike: boolean }) {
           {likes}
         </span>
         <button onClick={openComments} className="hover:text-[var(--text)]">
-          {commentCount} comments
+          {t.feed.comments(commentCount)}
         </button>
       </div>
 
@@ -261,7 +264,7 @@ function PostCard({ post, canLike }: { post: Post; canLike: boolean }) {
                 onChange={(e) => setCommentText(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && sendComment()}
                 maxLength={500}
-                placeholder="Add a comment"
+                placeholder={t.feed.addComment}
                 className="flex-1 rounded-full border bg-transparent px-3 py-1.5 text-sm outline-none placeholder:text-[var(--text-mut)]"
               />
               <button
@@ -270,12 +273,12 @@ function PostCard({ post, canLike }: { post: Post; canLike: boolean }) {
                 className="rounded-full px-4 py-1.5 text-sm font-medium text-black disabled:opacity-40"
                 style={{ background: "var(--brand-grad)" }}
               >
-                Send
+                {t.common.send}
               </button>
             </div>
           ) : (
             <p className="mt-3 text-xs text-[var(--text-mut)]">
-              Connect a wallet to join the conversation.
+              {t.feed.joinConvo}
             </p>
           )}
         </div>

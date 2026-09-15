@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PublicKey } from "@solana/web3.js";
 import { sql } from "@/lib/db";
-import { randomNonce } from "@/lib/auth/siws";
+import { randomNonce, buildSiwsMessage, SIWS_DOMAIN } from "@/lib/auth/siws";
 import { rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
@@ -39,5 +39,11 @@ export async function POST(req: NextRequest) {
     VALUES (${nonce}, ${wallet}, ${issuedAt}, ${expiresAt})
   `;
 
-  return NextResponse.json({ nonce, issuedAt });
+  // `message` is the exact text to sign, so a headless client never has to
+  // reconstruct the format (and get a byte wrong).
+  return NextResponse.json({
+    nonce,
+    issuedAt,
+    message: buildSiwsMessage({ domain: SIWS_DOMAIN, address: wallet, nonce, issuedAt }),
+  });
 }

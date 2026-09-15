@@ -5,7 +5,7 @@
 [![Solana](https://img.shields.io/badge/Chain-Solana-9945FF?logo=solana)](https://solana.com)
 [![Next.js](https://img.shields.io/badge/Framework-Next.js_15-black?logo=next.js)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript)](https://typescriptlang.org)
-[![CI](https://github.com/nayrbryanGaming/solgig/actions/workflows/ci.yml/badge.svg)](https://github.com/nayrbryanGaming/solgig/actions)
+[![CI](https://github.com/bryankwandou/solgig/actions/workflows/ci.yml/badge.svg)](https://github.com/bryankwandou/solgig/actions)
 
 **Live:**
 - Mainnet (real SOL): https://solgig-mainnet.vercel.app
@@ -28,7 +28,7 @@ Solana has two meaningfully different environments: **devnet** (free test SOL, f
 
 | | Devnet (demo) | Mainnet (real) |
 |---|---|---|
-| Repo | `nayrbryanGaming/solgig` | `nayrbryanGaming/solgig-mainnet` |
+| Repo | `bryankwandou/solgig` | `bryankwandou/solgig-mainnet` |
 | Deployment | solgig.vercel.app | solgig-mainnet.vercel.app |
 | Database | Neon `neondb` (seeded with demo data) | Neon `solgig_mainnet` (empty, real users only) |
 | Escrow / treasury wallets | Devnet-only keypairs, funded with faucet SOL | Independent mainnet keypairs |

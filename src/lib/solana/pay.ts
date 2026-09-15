@@ -68,6 +68,8 @@ export async function verifyPayment(params: {
   sellerMinLamports: number;
   treasury?: string | null;
   feeLamports?: number;
+  /** Unix seconds. A transfer that landed before this cannot pay the order. */
+  notBefore?: number;
 }): Promise<{ ok: boolean; reason?: string }> {
   const connection = getConnection();
   const tx = await connection.getTransaction(params.signature, {
@@ -76,6 +78,11 @@ export async function verifyPayment(params: {
   });
   if (!tx) return { ok: false, reason: "not_found" };
   if (tx.meta?.err) return { ok: false, reason: "tx_failed" };
+  // Without this, any older transfer from the buyer to the seller for the
+  // same amount (a tip, an off-platform deal) could be claimed as payment.
+  if (params.notBefore && tx.blockTime && tx.blockTime < params.notBefore) {
+    return { ok: false, reason: "tx_predates_order" };
+  }
 
   const message = tx.transaction.message;
   const keys = message

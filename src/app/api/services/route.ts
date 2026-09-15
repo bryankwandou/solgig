@@ -27,7 +27,8 @@ const CreateService = z.object({
   description: z.string().max(5000).default(""),
   thumbnail_url: z.string().url().optional().or(z.literal("")),
   tags: z.array(z.string()).max(10).default([]),
-  price_lamports: z.number().int().nonnegative(),
+  // Floor of 0.001 SOL: smaller transfers can fail the rent-exempt minimum.
+  price_lamports: z.number().int().min(1_000_000),
   delivery_days: z.number().int().min(1).max(90).default(3),
   revisions: z.number().int().min(0).max(20).default(1),
 });
