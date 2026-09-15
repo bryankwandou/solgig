@@ -25,7 +25,10 @@ export default function TokenOrbit() {
       0.1,
       100,
     );
-    camera.position.set(0, 0, 9);
+    // Far enough back that the nearest coin on the widest orbit still fits the
+    // frame; narrow (phone) frames need a little more distance.
+    const distanceFor = (aspect: number) => (aspect < 1.2 ? 15.5 : 13);
+    camera.position.set(0, 0, distanceFor(camera.aspect));
 
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -61,7 +64,7 @@ export default function TokenOrbit() {
         emissive: (i % 2 === 0 ? violet : mint).clone().multiplyScalar(0.12),
       });
       const mesh = new THREE.Mesh(coinGeo, mat);
-      const radius = 2.4 + (i % 3) * 1.1;
+      const radius = 2.2 + (i % 3) * 0.8;
       const phase = (i / COUNT) * Math.PI * 2;
       mesh.rotation.x = Math.PI / 2;
       group.add(mesh);
@@ -125,6 +128,7 @@ export default function TokenOrbit() {
     function onResize() {
       if (!mount) return;
       camera.aspect = mount.clientWidth / mount.clientHeight;
+      camera.position.z = distanceFor(camera.aspect);
       camera.updateProjectionMatrix();
       renderer.setSize(mount.clientWidth, mount.clientHeight);
     }
