@@ -55,13 +55,10 @@ export function Nav() {
           </Link>
           <MagneticButton
             onClick={() => router.push("/dashboard/new")}
-            className="relative isolate overflow-hidden rounded-full px-4 py-2 text-sm font-medium text-black"
+            background="var(--brand-grad)"
+            className="rounded-full px-4 py-2 text-sm font-medium text-black"
           >
-            <span
-              className="absolute inset-0 -z-10 rounded-full"
-              style={{ background: "var(--brand-grad)" }}
-            />
-            <span className="relative">{copy.nav.cta}</span>
+            {copy.nav.cta}
           </MagneticButton>
         </div>
       </nav>

@@ -52,13 +52,10 @@ export function Hero() {
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <MagneticButton
                 onClick={() => router.push("/dashboard/new")}
-                className="relative isolate overflow-hidden rounded-full px-6 py-3 text-sm font-semibold text-black"
+                background="var(--brand-grad)"
+                className="rounded-full px-6 py-3 text-sm font-semibold text-black"
               >
-                <span
-                  className="absolute inset-0 -z-10 rounded-full"
-                  style={{ background: "var(--brand-grad)" }}
-                />
-                <span className="relative">{copy.hero.primary}</span>
+                {copy.hero.primary}
               </MagneticButton>
               <a
                 href="#agents"

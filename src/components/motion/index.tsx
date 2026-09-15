@@ -186,11 +186,14 @@ export function MagneticButton({
   className,
   onClick,
   strength = 0.4,
+  background,
 }: {
   children: ReactNode;
   className?: string;
   onClick?: () => void;
   strength?: number;
+  /** Painted on the button itself, so it can never spill onto a parent. */
+  background?: string;
 }) {
   const ref = useRef<HTMLButtonElement>(null);
   const x = useSpring(useMotionValue(0), { stiffness: 250, damping: 18 });
@@ -211,7 +214,7 @@ export function MagneticButton({
   return (
     <motion.button
       ref={ref}
-      style={{ x, y }}
+      style={{ x, y, background }}
       onMouseMove={move}
       onMouseLeave={reset}
       onClick={onClick}
