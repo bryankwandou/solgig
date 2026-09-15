@@ -328,10 +328,16 @@ export function CounterUp({
 }) {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, margin: "-40px" });
-  const [val, setVal] = useState(0);
+  // The real figure is the default, so screenshots, crawlers and visitors who
+  // turned motion off never read a false "0". The count-up only replays it.
+  const [val, setVal] = useState(to);
 
   useEffect(() => {
     if (!inView) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setVal(to);
+      return;
+    }
     const controls = animate(0, to, {
       duration: 1.4,
       ease: EASE,
