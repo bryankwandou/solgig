@@ -34,6 +34,14 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
+      // A ?lang= link wins over the saved choice, so a shared link opens in
+      // the language it was shared in.
+      const fromUrl = new URLSearchParams(window.location.search).get("lang");
+      if (fromUrl === "en" || fromUrl === "id") {
+        setLocaleState(fromUrl);
+        localStorage.setItem(STORAGE_KEY, fromUrl);
+        return;
+      }
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved === "en" || saved === "id") setLocaleState(saved);
     } catch {
