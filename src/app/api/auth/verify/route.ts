@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
-import { buildSiwsMessage, verifySiwsSignature } from "@/lib/auth/siws";
+import { buildSiwsMessage, verifySiwsSignature, SIWS_DOMAIN as DOMAIN } from "@/lib/auth/siws";
 import { createSession } from "@/lib/auth/session";
 import { upsertUserByWallet } from "@/lib/auth/current-user";
 import { rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
-
-const DOMAIN = "solgig.xyz";
 
 // Verify a signed SIWS message, burn the nonce, and open a session.
 export async function POST(req: NextRequest) {

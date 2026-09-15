@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Stagger, StaggerItem, HoverTilt } from "@/components/motion";
 import { formatSol, shortAddress } from "@/lib/utils";
+import { useCopy } from "@/lib/i18n";
 
 type Product = {
   id: string;
@@ -23,6 +24,7 @@ type Product = {
 };
 
 export default function MarketplacePage() {
+  const t = useCopy().pages;
   const [items, setItems] = useState<Product[]>([]);
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
@@ -42,23 +44,24 @@ export default function MarketplacePage() {
     <div>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-bold">Marketplace</h1>
+          <h1 className="font-display text-2xl font-bold">{t.market.title}</h1>
           <p className="mt-1 text-sm text-[var(--text-mut)]">
-            Digital goods from creators on Solana.
+            {t.market.sub}
           </p>
         </div>
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search listings"
+          placeholder={t.market.search}
+          aria-label={t.market.search}
           className="rounded-full border bg-transparent px-4 py-2 text-sm outline-none"
         />
       </div>
 
-      {loading && <p className="mt-8 text-sm text-[var(--text-mut)]">Loading…</p>}
+      {loading && <p className="mt-8 text-sm text-[var(--text-mut)]">{t.common.loading}</p>}
       {!loading && items.length === 0 && (
         <p className="mt-8 text-sm text-[var(--text-mut)]">
-          Nothing here yet. List the first item from your dashboard and it lands at the top.
+          {t.market.empty}
         </p>
       )}
 

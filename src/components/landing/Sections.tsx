@@ -15,7 +15,9 @@ import {
   ScrollSkew,
 } from "@/components/motion";
 import { LogoLockup } from "@/components/brand/Logo";
-import { copy } from "@/content/copy";
+import Link from "next/link";
+import { useCopy } from "@/lib/i18n";
+import type { Copy } from "@/content/copy";
 import { shortAddress } from "@/lib/utils";
 
 function SectionHeading({
@@ -43,6 +45,7 @@ function SectionHeading({
 
 /* Proof strip — auto-scrolling row of categories. */
 export function ProofStrip() {
+  const copy = useCopy();
   const tags = [
     "Presets",
     "Notion templates",
@@ -79,6 +82,7 @@ export function ProofStrip() {
 
 /* How it works — three steps. */
 export function HowItWorks() {
+  const copy = useCopy();
   return (
     <section id="how" className="mx-auto max-w-[1200px] px-5 py-24">
       <SectionHeading title={copy.how.title} />
@@ -110,6 +114,7 @@ export function HowItWorks() {
 
 /* For sellers and buyers — two columns with counting figures. */
 export function SellersBuyers() {
+  const copy = useCopy();
   const block = (
     heading: string,
     points: readonly string[],
@@ -152,10 +157,10 @@ export function SellersBuyers() {
       </div>
 
       <div className="mt-10 grid grid-cols-2 gap-6 sm:grid-cols-4">
-        <Figure value={<CounterUp to={97.5} decimals={1} suffix="%" />} label="Kept on each sale" />
-        <Figure value={<CounterUp to={2} decimals={0} suffix=" min" />} label="To publish a listing" />
-        <Figure value={<><CounterUp to={1} decimals={0} />s</>} label="Median payout time" />
-        <Figure value={<CounterUp to={0} decimals={0} prefix="" suffix=" chargebacks" />} label="On-chain and final" />
+        <Figure value={<CounterUp to={97.5} decimals={1} suffix="%" />} label={copy.landing.figures[0]} />
+        <Figure value={<CounterUp to={2} decimals={0} suffix=" min" />} label={copy.landing.figures[1]} />
+        <Figure value={<><CounterUp to={1} decimals={0} />s</>} label={copy.landing.figures[2]} />
+        <Figure value={<CounterUp to={0} decimals={0} suffix={copy.landing.chargebacks} />} label={copy.landing.figures[3]} />
       </div>
     </section>
   );
@@ -185,6 +190,7 @@ const AGENT_TRACE = [
 ] as const;
 
 export function AgentSection() {
+  const copy = useCopy();
   return (
     <section id="agents" className="mx-auto max-w-[1200px] px-5 py-24">
       <SectionHeading title={copy.agents.title} sub={copy.agents.sub} />
@@ -213,6 +219,7 @@ export function AgentSection() {
 }
 
 function AgentTerminal() {
+  const copy = useCopy();
   return (
     <div
       className="overflow-hidden rounded-[var(--radius-md)] border font-mono text-[13px] leading-relaxed"
@@ -237,7 +244,7 @@ function AgentTerminal() {
         <Reveal delay={7.4} dir="up">
           <div className="mt-2 flex items-center gap-2 text-xs" style={{ color: "var(--brand-mint)" }}>
             <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full" style={{ background: "var(--brand-mint)" }} />
-            replayed from a real devnet transaction
+            {copy.landing.replayed}
           </div>
         </Reveal>
       </div>
@@ -247,6 +254,7 @@ function AgentTerminal() {
 
 /* Trust — the escrow flow, nodes light up in sequence. */
 export function TrustFlow() {
+  const copy = useCopy();
   return (
     <Spotlight>
       <section id="trust" className="mx-auto max-w-[1200px] px-5 py-24">
@@ -257,7 +265,7 @@ export function TrustFlow() {
               <div className="relative rounded-[var(--radius-md)] border p-7" style={{ background: "var(--surface)" }}>
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-xs text-[var(--text-mut)]">
-                    step {i + 1}
+                    {copy.landing.step} {i + 1}
                   </span>
                   <ProgressRing progress={(i + 1) / 3} size={44} />
                 </div>
@@ -276,6 +284,7 @@ export function TrustFlow() {
 
 /* Feed preview — the same card the app uses, read only. */
 export function FeedPreview() {
+  const copy = useCopy();
   return (
     <section id="feed" className="mx-auto max-w-[1200px] px-5 py-24">
       <SectionHeading title={copy.feed.title} sub={copy.feed.sub} />
@@ -294,9 +303,10 @@ function FeedCard({
   post,
   index,
 }: {
-  post: (typeof copy.feed.posts)[number];
+  post: Copy["feed"]["posts"][number];
   index: number;
 }) {
+  const copy = useCopy();
   const fakeWallet = ["7xKXtg2C", "3nQpLm9", "Bv4Re8Z"][index % 3] + "aZ9fA1bQ";
   return (
     <article className="rounded-[var(--radius-md)] border p-5" style={{ background: "var(--surface)" }}>
@@ -319,14 +329,15 @@ function FeedCard({
         <div className="flex items-center gap-4 text-sm text-[var(--text-mut)]">
           <LikeBurst />
           <span>{post.likes}</span>
-          <span>{post.comments} replies</span>
+          <span>{post.comments} {copy.landing.replies}</span>
         </div>
-        <button
+        <Link
+          href="/marketplace"
           className="rounded-full px-4 py-2 text-sm font-medium text-black"
           style={{ background: "var(--brand-grad)" }}
         >
-          Buy · {post.price}
-        </button>
+          {copy.landing.buy} · {post.price}
+        </Link>
       </div>
     </article>
   );
@@ -334,6 +345,7 @@ function FeedCard({
 
 /* Final call to action. */
 export function FinalCta() {
+  const copy = useCopy();
   return (
     <section className="relative overflow-hidden py-28">
       <Parallax amount={40} className="absolute inset-0">
@@ -358,17 +370,18 @@ export function FinalCta() {
         </Reveal>
         <Reveal delay={0.2}>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <button
+            <Link
+              href="/dashboard/new"
               className="rounded-full px-6 py-3 text-sm font-semibold text-black"
               style={{ background: "var(--brand-grad)" }}
             >
               {copy.finalCta.primary}
-            </button>
+            </Link>
             <a
               href="/dev/animations"
               className="rounded-full border px-6 py-3 text-sm font-medium transition-colors hover:bg-[var(--surface)]"
             >
-              See the motion gallery
+              {copy.landing.gallery}
             </a>
           </div>
         </Reveal>
@@ -379,6 +392,7 @@ export function FinalCta() {
 
 /* Footer. */
 export function Footer() {
+  const copy = useCopy();
   return (
     <footer className="border-t">
       <div className="mx-auto grid max-w-[1200px] gap-10 px-5 py-14 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
@@ -393,12 +407,13 @@ export function Footer() {
             <h4 className="text-sm font-semibold">{c.title}</h4>
             <ul className="mt-3 space-y-2">
               {c.links.map((l) => (
-                <li key={l}>
+                <li key={l.href}>
                   <a
-                    href="#"
+                    href={l.href}
+                    {...(l.href.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})}
                     className="text-sm text-[var(--text-mut)] transition-colors hover:text-[var(--text)]"
                   >
-                    {l}
+                    {l.label}
                   </a>
                 </li>
               ))}

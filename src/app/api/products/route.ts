@@ -40,7 +40,8 @@ const CreateProduct = z.object({
   product_type: z.string().default("other"),
   tags: z.array(z.string()).max(10).default([]),
   file_url: z.string().url().optional().or(z.literal("")),
-  price_lamports: z.number().int().nonnegative(),
+  // Floor of 0.001 SOL: smaller transfers can fail the rent-exempt minimum.
+  price_lamports: z.number().int().min(1_000_000),
 });
 
 // POST /api/products — create a listing for the signed-in seller.

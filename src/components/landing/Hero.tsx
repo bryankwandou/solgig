@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import {
   GradientMesh,
   FloatingOrbs,
@@ -10,7 +11,7 @@ import {
   CounterUp,
   PulseDot,
 } from "@/components/motion";
-import { copy } from "@/content/copy";
+import { useCopy } from "@/lib/i18n";
 
 const TokenOrbit = dynamic(() => import("@/components/three/TokenOrbit"), {
   ssr: false,
@@ -18,6 +19,8 @@ const TokenOrbit = dynamic(() => import("@/components/three/TokenOrbit"), {
 });
 
 export function Hero() {
+  const copy = useCopy();
+  const router = useRouter();
   return (
     <section className="relative flex min-h-[100svh] items-center overflow-hidden pt-16">
       <GradientMesh />
@@ -36,7 +39,7 @@ export function Hero() {
           </Reveal>
 
           <h1 className="font-display mt-5 text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
-            <SplitText text={copy.hero.title} />
+            <SplitText key={copy.hero.title} text={copy.hero.title} />
           </h1>
 
           <Reveal dir="up" delay={0.15}>
@@ -48,10 +51,8 @@ export function Hero() {
           <Reveal dir="up" delay={0.25}>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <MagneticButton
-                onClick={() => {
-                  window.location.href = "/dashboard/new";
-                }}
-                className="relative rounded-full px-6 py-3 text-sm font-semibold text-black"
+                onClick={() => router.push("/dashboard/new")}
+                className="relative isolate overflow-hidden rounded-full px-6 py-3 text-sm font-semibold text-black"
               >
                 <span
                   className="absolute inset-0 -z-10 rounded-full"
@@ -60,7 +61,7 @@ export function Hero() {
                 <span className="relative">{copy.hero.primary}</span>
               </MagneticButton>
               <a
-                href="/feed"
+                href="#agents"
                 className="rounded-full border px-6 py-3 text-sm font-medium text-[var(--text)] transition-colors hover:bg-[var(--surface)]"
               >
                 {copy.hero.secondary}
@@ -75,10 +76,7 @@ export function Hero() {
                 label={copy.hero.statFee}
               />
               <Stat value={<span>~1s</span>} label={copy.hero.statSettle} />
-              <Stat
-                value={<CounterUp to={100} suffix="%" />}
-                label={copy.hero.statReceipts}
-              />
+              <Stat value={<span>1</span>} label={copy.hero.statEndpoint} />
             </dl>
           </Reveal>
         </div>
@@ -86,7 +84,7 @@ export function Hero() {
         <div className="relative h-[360px] sm:h-[460px] lg:h-[560px]">
           <TokenOrbit />
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
-            <PulseDot label="Live on Solana" />
+            <PulseDot label={copy.hero.live} />
           </div>
         </div>
       </div>

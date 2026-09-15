@@ -3,7 +3,6 @@ import {
   PublicKey,
   SystemProgram,
   Transaction,
-  sendAndConfirmTransaction,
 } from "@solana/web3.js";
 import bs58 from "bs58";
 import { getConnection } from "./pay";
@@ -28,15 +27,28 @@ export function getEscrowAddress(): string | null {
   return getEscrowKeypair()?.publicKey.toBase58() ?? null;
 }
 
+/** Thrown once the payout has been signed, so the money may already be moving. */
+export class PayoutInFlightError extends Error {
+  constructor(public signature: string, cause: unknown) {
+    super(`payout ${signature} did not confirm: ${String(cause)}`);
+  }
+}
+
 /**
- * Pay the seller (and the treasury fee) out of escrow. Returns the payout
- * signature. Throws if the transfer fails, so callers must not mark the
- * order complete when this errors.
+ * Pay the seller (and the treasury fee) out of escrow and return the payout
+ * signature.
+ *
+ * The transaction is signed before it is broadcast, and `onSigned` gets the
+ * signature first so the caller can persist it. If confirmation then times
+ * out, the payout may still land; the caller must look the signature up
+ * with payoutStatus() rather than pay again. Errors before signing are
+ * plain Errors and mean nothing was sent.
  */
 export async function releaseEscrow(params: {
   seller: string;
   amountLamports: number;
   feeLamports: number;
+  onSigned: (signature: string) => Promise<void>;
 }): Promise<string> {
   const escrow = getEscrowKeypair();
   if (!escrow) throw new Error("escrow_disabled");
@@ -62,7 +74,36 @@ export async function releaseEscrow(params: {
       }),
     );
   }
-  return sendAndConfirmTransaction(connection, tx, [escrow], {
-    commitment: "confirmed",
+
+  const { blockhash, lastValidBlockHeight } =
+    await connection.getLatestBlockhash("confirmed");
+  tx.recentBlockhash = blockhash;
+  tx.feePayer = escrow.publicKey;
+  tx.sign(escrow);
+  const signature = bs58.encode(tx.signature!);
+  await params.onSigned(signature);
+
+  try {
+    await connection.sendRawTransaction(tx.serialize());
+    const { value } = await connection.confirmTransaction(
+      { signature, blockhash, lastValidBlockHeight },
+      "confirmed",
+    );
+    if (value.err) throw new Error(JSON.stringify(value.err));
+  } catch (err) {
+    throw new PayoutInFlightError(signature, err);
+  }
+  return signature;
+}
+
+/** Where a previously signed payout stands on-chain. */
+export async function payoutStatus(
+  signature: string,
+): Promise<"landed" | "failed" | "unknown"> {
+  const { value } = await getConnection().getSignatureStatus(signature, {
+    searchTransactionHistory: true,
   });
+  if (!value) return "unknown";
+  if (value.err) return "failed";
+  return value.confirmationStatus === "processed" ? "unknown" : "landed";
 }
