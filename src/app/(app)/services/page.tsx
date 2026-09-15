@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
-import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
+import { buildPaymentTx } from "@/lib/solana/paymentTx";
 import { useAuth } from "@/lib/auth/useAuth";
 import { Stagger, StaggerItem, HoverTilt } from "@/components/motion";
 import { formatSol, shortAddress } from "@/lib/utils";
+import { useCopy } from "@/lib/i18n";
 
 type Service = {
   id: string;
@@ -24,6 +25,7 @@ type Service = {
 };
 
 export default function ServicesPage() {
+  const t = useCopy().pages;
   const [items, setItems] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -36,16 +38,15 @@ export default function ServicesPage() {
 
   return (
     <div>
-      <h1 className="font-display text-2xl font-bold">Services</h1>
+      <h1 className="font-display text-2xl font-bold">{t.services.title}</h1>
       <p className="mt-1 text-sm text-[var(--text-mut)]">
-        Book time with people who make things. Payment settles on Solana up
-        front; you mark the order complete once the work arrives.
+        {t.services.sub}
       </p>
 
-      {loading && <p className="mt-8 text-sm text-[var(--text-mut)]">Loading…</p>}
+      {loading && <p className="mt-8 text-sm text-[var(--text-mut)]">{t.common.loading}</p>}
       {!loading && items.length === 0 && (
         <p className="mt-8 text-sm text-[var(--text-mut)]">
-          No services listed yet. Add one from your dashboard.
+          {t.services.empty}
         </p>
       )}
 
@@ -78,7 +79,7 @@ export default function ServicesPage() {
                 </div>
                 <div className="mt-4 flex items-center justify-between text-sm">
                   <span className="text-[var(--text-mut)]">
-                    {s.delivery_days} day delivery
+                    {t.common.delivery(s.delivery_days)}
                   </span>
                   <span className="font-medium text-grad">{formatSol(s.price_lamports)}</span>
                 </div>
@@ -109,12 +110,13 @@ function BookButton({ service }: { service: Service }) {
   const { publicKey, sendTransaction } = useWallet();
   const { connection } = useConnection();
   const [state, setState] = useState<BookState>({ step: "idle" });
+  const t = useCopy().pages;
 
   const isOwn = user?.wallet_address === service.seller_wallet;
 
   async function book() {
     if (!publicKey || !user) {
-      setState({ step: "error", message: "Connect a wallet first." });
+      setState({ step: "error", message: t.services.connect });
       return;
     }
     try {
@@ -127,25 +129,8 @@ function BookButton({ service }: { service: Service }) {
       if (created.error) throw new Error(created.error.message);
 
       const { order, payment } = created;
-      // Escrow orders send the full amount to the platform escrow wallet;
-      // direct orders send the seller cut plus a separate fee transfer.
-      const sellerCut = payment.amountLamports - (payment.feeLamports ?? 0);
-      const tx = new Transaction().add(
-        SystemProgram.transfer({
-          fromPubkey: publicKey,
-          toPubkey: new PublicKey(payment.payTo ?? payment.sellerWallet),
-          lamports: sellerCut,
-        }),
-      );
-      if (payment.treasury && payment.feeLamports > 0) {
-        tx.add(
-          SystemProgram.transfer({
-            fromPubkey: publicKey,
-            toPubkey: new PublicKey(payment.treasury),
-            lamports: payment.feeLamports,
-          }),
-        );
-      }
+      // The server lists every transfer; escrow orders have a single one.
+      const tx = buildPaymentTx(publicKey, payment);
 
       setState({ step: "paying" });
       const signature = await sendTransaction(tx, connection);
@@ -165,7 +150,7 @@ function BookButton({ service }: { service: Service }) {
     } catch (e) {
       setState({
         step: "error",
-        message: e instanceof Error ? e.message : "The booking did not complete.",
+        message: e instanceof Error ? e.message : t.services.failed,
       });
     }
   }
@@ -173,8 +158,7 @@ function BookButton({ service }: { service: Service }) {
   if (state.step === "done") {
     return (
       <p className="mt-4 text-xs" style={{ color: "var(--brand-mint)" }}>
-        Booked. Track it on your Orders page and mark it complete when the
-        work lands.
+        {t.services.booked}
       </p>
     );
   }
@@ -190,14 +174,14 @@ function BookButton({ service }: { service: Service }) {
         style={{ background: "var(--brand-grad)" }}
       >
         {isOwn
-          ? "Your listing"
+          ? t.services.own
           : state.step === "creating"
-            ? "Opening order…"
+            ? t.common.opening
             : state.step === "paying"
-              ? "Approve in your wallet…"
+              ? t.common.approve
               : state.step === "confirming"
-                ? "Confirming on Solana…"
-                : `Book for ${formatSol(service.price_lamports)}`}
+                ? t.common.confirming
+                : t.services.bookFor(formatSol(service.price_lamports))}
       </button>
       {state.step === "error" && (
         <p className="mt-2 text-xs" style={{ color: "var(--err)" }}>

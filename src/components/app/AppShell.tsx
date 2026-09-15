@@ -7,6 +7,7 @@ import { LogoLockup } from "@/components/brand/Logo";
 import { useAuth } from "@/lib/auth/useAuth";
 import { shortAddress } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { LocaleSwitch, useCopy } from "@/lib/i18n";
 
 const WalletMultiButton = dynamic(
   () =>
@@ -16,37 +17,31 @@ const WalletMultiButton = dynamic(
   { ssr: false },
 );
 
-const NAV = [
-  { href: "/feed", label: "Feed" },
-  { href: "/marketplace", label: "Marketplace" },
-  { href: "/services", label: "Services" },
-  { href: "/orders", label: "Orders" },
-  { href: "/dashboard", label: "Dashboard" },
-];
-
 const NETWORK = process.env.NEXT_PUBLIC_SOLANA_NETWORK ?? "devnet";
 const IS_MAINNET = NETWORK === "mainnet-beta";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, signOut, signingIn } = useAuth();
+  const copy = useCopy();
+  const NAV = copy.app.nav;
 
   return (
     <div className="min-h-screen">
       <div
-        className={cn(
-          "px-5 py-1.5 text-center text-xs font-medium",
-          IS_MAINNET ? "bg-[#9945FF] text-white" : "bg-amber-400 text-black",
-        )}
+        className="px-5 py-1.5 text-center text-xs font-medium"
+        style={
+          IS_MAINNET
+            ? { background: "var(--brand-violet)", color: "#fff" }
+            : { background: "var(--warn)", color: "var(--bg)" }
+        }
       >
-        {IS_MAINNET
-          ? "Mainnet — real SOL, real payments. Transactions cannot be reversed."
-          : "Devnet demo — test SOL only, no real money changes hands."}
+        {IS_MAINNET ? copy.app.mainnetBanner : copy.app.devnetBanner}
       </div>
       <header
         className="sticky top-0 z-40 border-b"
         style={{
-          background: "oklch(0.16 0.01 280 / 0.8)",
+          background: "color-mix(in oklch, var(--bg) 80%, transparent)",
           backdropFilter: "blur(12px)",
         }}
       >
@@ -72,14 +67,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </nav>
           <div className="flex items-center gap-3">
             {signingIn && (
-              <span className="text-xs text-[var(--text-mut)]">Signing in…</span>
+              <span className="text-xs text-[var(--text-mut)]">{copy.app.signingIn}</span>
             )}
+            <LocaleSwitch className="hidden sm:inline-flex" />
             {user && (
               <button
                 onClick={signOut}
                 className="hidden text-sm text-[var(--text-mut)] transition-colors hover:text-[var(--text)] sm:block"
               >
-                Sign out
+                {copy.app.signOut}
               </button>
             )}
             <WalletMultiButton
@@ -117,7 +113,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {user && (
         <div className="border-b" style={{ background: "var(--surface)" }}>
           <div className="mx-auto max-w-[1200px] px-5 py-1.5 text-xs text-[var(--text-mut)]">
-            Connected as{" "}
+            {copy.app.connectedAs}{" "}
             <span className="font-mono">
               {user.username ? `@${user.username}` : shortAddress(user.wallet_address)}
             </span>

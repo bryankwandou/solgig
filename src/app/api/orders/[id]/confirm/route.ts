@@ -34,9 +34,10 @@ export async function POST(
   const rows = (await sql`
     SELECT id, buyer_id, seller_wallet, buyer_wallet, amount_lamports,
            platform_fee_lamports, product_id, service_id, order_type,
-           seller_id, status, escrow
+           seller_id, status, escrow, created_at
     FROM orders WHERE id = ${id}
   `) as {
+    created_at: string;
     buyer_id: string;
     seller_wallet: string;
     buyer_wallet: string;
@@ -83,6 +84,8 @@ export async function POST(
     sellerMinLamports: sellerMin,
     treasury: escrowAddress ? null : treasury,
     feeLamports: escrowAddress ? 0 : platformFee,
+    // Two minutes of slack for clock drift between the database and the chain.
+    notBefore: Math.floor(new Date(order.created_at).getTime() / 1000) - 120,
   });
   if (!check.ok) {
     return NextResponse.json(

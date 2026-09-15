@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/lib/auth/useAuth";
 import { CounterUp } from "@/components/motion";
 import { formatSol, lamportsToSol } from "@/lib/utils";
+import { useCopy } from "@/lib/i18n";
 
 type Dash = {
   profile: {
@@ -39,6 +40,7 @@ type Dash = {
 
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
+  const t = useCopy().pages;
   const [data, setData] = useState<Dash | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -54,14 +56,14 @@ export default function DashboardPage() {
   }, [user]);
 
   if (authLoading || loading)
-    return <p className="text-sm text-[var(--text-mut)]">Loading…</p>;
+    return <p className="text-sm text-[var(--text-mut)]">{t.common.loading}</p>;
 
   if (!user)
     return (
       <div className="rounded-[var(--radius-md)] border p-6" style={{ background: "var(--surface)" }}>
-        <p className="text-sm">Connect a wallet to see your dashboard.</p>
+        <p className="text-sm">{t.dashboard.connect}</p>
         <p className="mt-1 text-sm text-[var(--text-mut)]">
-          Use the button in the top bar. You will sign a short message to prove the wallet is yours.
+          {t.dashboard.connectHint}
         </p>
       </div>
     );
@@ -71,23 +73,23 @@ export default function DashboardPage() {
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="font-display text-2xl font-bold">Dashboard</h1>
+        <h1 className="font-display text-2xl font-bold">{t.dashboard.title}</h1>
         <Link
           href="/dashboard/new"
           className="rounded-full px-4 py-2 text-sm font-medium text-black"
           style={{ background: "var(--brand-grad)" }}
         >
-          New listing
+          {t.dashboard.newListing}
         </Link>
       </div>
 
       <div className="mt-6 grid grid-cols-3 gap-4">
-        <Metric label="Earned" value={<><CounterUp to={earned} decimals={2} /> SOL</>} />
-        <Metric label="Completed orders" value={<CounterUp to={data?.profile.completed_orders ?? 0} />} />
-        <Metric label="Reputation" value={<CounterUp to={data?.profile.reputation_score ?? 0} />} />
+        <Metric label={t.dashboard.earned} value={<><CounterUp to={earned} decimals={2} /> SOL</>} />
+        <Metric label={t.dashboard.completed} value={<CounterUp to={data?.profile.completed_orders ?? 0} />} />
+        <Metric label={t.dashboard.reputation} value={<CounterUp to={data?.profile.reputation_score ?? 0} />} />
       </div>
 
-      <Section title="Your products">
+      <Section title={t.dashboard.products}>
         {data && data.products.length > 0 ? (
           <ul className="divide-y">
             {data.products.map((p) => (
@@ -96,50 +98,50 @@ export default function DashboardPage() {
                   {p.title}
                 </Link>
                 <span className="text-sm text-[var(--text-mut)]">
-                  {p.total_purchases} sold · {formatSol(p.price_lamports)}
+                  {t.common.sold(p.total_purchases)} · {formatSol(p.price_lamports)}
                 </span>
               </li>
             ))}
           </ul>
         ) : (
-          <Empty>No products yet. Create one to start selling.</Empty>
+          <Empty>{t.dashboard.noProducts}</Empty>
         )}
       </Section>
 
-      <Section title="Your purchases">
+      <Section title={t.dashboard.purchases}>
         {data && data.purchases.length > 0 ? (
           <ul className="divide-y">
             {data.purchases.map((o) => (
               <li key={o.order_number} className="flex items-center justify-between py-3">
                 <span className="text-sm">
-                  {o.product_title ?? "Order"}{" "}
+                  {o.product_title ?? t.dashboard.order}{" "}
                   <span className="font-mono text-xs text-[var(--text-mut)]">{o.order_number}</span>
                 </span>
                 <span className="text-sm text-[var(--text-mut)]">
-                  {o.status} · {formatSol(o.amount_lamports)}
+                  {t.status[o.status] ?? o.status} · {formatSol(o.amount_lamports)}
                 </span>
               </li>
             ))}
           </ul>
         ) : (
-          <Empty>No purchases yet.</Empty>
+          <Empty>{t.dashboard.noPurchases}</Empty>
         )}
       </Section>
 
-      <Section title="Recent sales">
+      <Section title={t.dashboard.sales}>
         {data && data.sales.length > 0 ? (
           <ul className="divide-y">
             {data.sales.map((o) => (
               <li key={o.order_number} className="flex items-center justify-between py-3">
-                <span className="text-sm">{o.product_title ?? "Order"}</span>
+                <span className="text-sm">{o.product_title ?? t.dashboard.order}</span>
                 <span className="text-sm text-[var(--text-mut)]">
-                  {o.status} · {formatSol(o.amount_lamports)}
+                  {t.status[o.status] ?? o.status} · {formatSol(o.amount_lamports)}
                 </span>
               </li>
             ))}
           </ul>
         ) : (
-          <Empty>No sales yet. Share a listing in the feed to get the first one.</Empty>
+          <Empty>{t.dashboard.noSales}</Empty>
         )}
       </Section>
     </div>

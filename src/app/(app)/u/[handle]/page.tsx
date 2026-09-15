@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { useAuth } from "@/lib/auth/useAuth";
 import { formatSol, shortAddress } from "@/lib/utils";
 import { Reveal, Stagger, StaggerItem, HoverTilt } from "@/components/motion";
+import { useCopy } from "@/lib/i18n";
 
 type Profile = {
   id: string;
@@ -52,6 +53,7 @@ type ProfilePost = {
 export default function ProfilePage() {
   const { handle } = useParams<{ handle: string }>();
   const { user } = useAuth();
+  const t = useCopy().pages;
   const [profile, setProfile] = useState<Profile | null>(null);
   const [products, setProducts] = useState<ProfileProduct[]>([]);
   const [services, setServices] = useState<ProfileService[]>([]);
@@ -84,11 +86,11 @@ export default function ProfilePage() {
     }
   }
 
-  if (loading) return <p className="text-sm text-[var(--text-mut)]">Loading…</p>;
+  if (loading) return <p className="text-sm text-[var(--text-mut)]">{t.common.loading}</p>;
   if (!profile)
     return (
       <p className="text-sm text-[var(--text-mut)]">
-        No one goes by that here.
+        {t.profile.notFound}
       </p>
     );
 
@@ -119,11 +121,11 @@ export default function ProfilePage() {
               <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[var(--text-mut)]">
                 <span className="font-mono">{shortAddress(profile.wallet_address)}</span>
                 <span>·</span>
-                <span>{profile.followers_count} followers</span>
+                <span>{t.profile.followers(profile.followers_count)}</span>
                 <span>·</span>
-                <span>{profile.following_count} following</span>
+                <span>{t.profile.following(profile.following_count)}</span>
                 <span>·</span>
-                <span>{profile.completed_orders} orders completed</span>
+                <span>{t.profile.ordersDone(profile.completed_orders)}</span>
               </div>
             </div>
           </div>
@@ -137,7 +139,7 @@ export default function ProfilePage() {
                   : { background: "var(--brand-grad)", color: "#000" }
               }
             >
-              {isFollowing ? "Following" : "Follow"}
+              {isFollowing ? t.profile.followingBtn : t.profile.follow}
             </button>
           )}
         </div>
@@ -159,7 +161,7 @@ export default function ProfilePage() {
 
       {products.length > 0 && (
         <section className="mt-10">
-          <h2 className="font-display text-lg font-semibold">Products</h2>
+          <h2 className="font-display text-lg font-semibold">{t.profile.products}</h2>
           <Stagger className="mt-4 grid gap-4 sm:grid-cols-2">
             {products.map((p) => (
               <StaggerItem key={p.id}>
@@ -178,7 +180,7 @@ export default function ProfilePage() {
                     )}
                     <div className="text-sm font-medium">{p.title}</div>
                     <div className="mt-2 flex items-center justify-between text-xs text-[var(--text-mut)]">
-                      <span>{p.total_purchases} sold</span>
+                      <span>{t.common.sold(p.total_purchases)}</span>
                       <span className="font-medium text-grad">
                         {formatSol(p.price_lamports)}
                       </span>
@@ -193,7 +195,7 @@ export default function ProfilePage() {
 
       {services.length > 0 && (
         <section className="mt-10">
-          <h2 className="font-display text-lg font-semibold">Services</h2>
+          <h2 className="font-display text-lg font-semibold">{t.profile.services}</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             {services.map((s) => (
               <div
@@ -210,7 +212,7 @@ export default function ProfilePage() {
                 )}
                 <div className="text-sm font-medium">{s.title}</div>
                 <div className="mt-2 flex items-center justify-between text-xs text-[var(--text-mut)]">
-                  <span>{s.delivery_days} day delivery</span>
+                  <span>{t.common.delivery(s.delivery_days)}</span>
                   <span className="font-medium text-grad">
                     {formatSol(s.price_lamports)}
                   </span>
@@ -223,7 +225,7 @@ export default function ProfilePage() {
 
       {posts.length > 0 && (
         <section className="mt-10">
-          <h2 className="font-display text-lg font-semibold">Recent posts</h2>
+          <h2 className="font-display text-lg font-semibold">{t.profile.posts}</h2>
           <div className="mt-4 space-y-3">
             {posts.map((p) => (
               <article
@@ -233,7 +235,7 @@ export default function ProfilePage() {
               >
                 <p className="whitespace-pre-wrap text-sm leading-relaxed">{p.content}</p>
                 <div className="mt-2 text-xs text-[var(--text-mut)]">
-                  {p.likes_count} likes · {p.comments_count} comments ·{" "}
+                  {t.profile.likes(p.likes_count)} · {t.profile.comments(p.comments_count)} ·{" "}
                   {new Date(p.created_at).toLocaleDateString()}
                 </div>
               </article>

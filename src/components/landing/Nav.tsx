@@ -1,11 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { LogoLockup } from "@/components/brand/Logo";
 import { MagneticButton } from "@/components/motion";
-import { copy } from "@/content/copy";
+import { LocaleSwitch, useCopy } from "@/lib/i18n";
 
 export function Nav() {
+  const copy = useCopy();
+  const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -19,13 +23,17 @@ export function Nav() {
     <header
       className="fixed inset-x-0 top-0 z-40 transition-all duration-300"
       style={{
-        backgroundColor: scrolled ? "oklch(0.16 0.01 280 / 0.7)" : "transparent",
+        backgroundColor: scrolled
+          ? "color-mix(in oklch, var(--bg) 72%, transparent)"
+          : "transparent",
         backdropFilter: scrolled ? "blur(12px)" : "none",
         borderBottom: scrolled ? "1px solid var(--border)" : "1px solid transparent",
       }}
     >
       <nav className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-5">
-        <LogoLockup />
+        <Link href="/" aria-label="SolGig home">
+          <LogoLockup />
+        </Link>
         <div className="hidden items-center gap-7 md:flex">
           {copy.nav.links.map((l) => (
             <a
@@ -38,14 +46,16 @@ export function Nav() {
           ))}
         </div>
         <div className="flex items-center gap-3">
-          <button className="hidden text-sm text-[var(--text-mut)] transition-colors hover:text-[var(--text)] sm:block">
+          <LocaleSwitch />
+          <Link
+            href="/marketplace"
+            className="hidden text-sm text-[var(--text-mut)] transition-colors hover:text-[var(--text)] sm:block"
+          >
             {copy.nav.signIn}
-          </button>
+          </Link>
           <MagneticButton
-            onClick={() => {
-              window.location.href = "/dashboard/new";
-            }}
-            className="rounded-full px-4 py-2 text-sm font-medium text-black"
+            onClick={() => router.push("/dashboard/new")}
+            className="relative isolate overflow-hidden rounded-full px-4 py-2 text-sm font-medium text-black"
           >
             <span
               className="absolute inset-0 -z-10 rounded-full"
