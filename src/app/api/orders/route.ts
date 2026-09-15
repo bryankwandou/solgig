@@ -128,6 +128,8 @@ export async function POST(req: NextRequest) {
     RETURNING id, order_number
   `;
 
+  // `transfers` is the exact list a client must put in one transaction.
+  // amountLamports is the total the buyer spends, fee included.
   return NextResponse.json({
     order: rows[0],
     payment: useEscrow
@@ -137,16 +139,23 @@ export async function POST(req: NextRequest) {
           escrow: true,
           payTo: escrowAddress,
           amountLamports: price,
+          sellerLamports: price,
           feeLamports: 0,
           treasury: null,
+          transfers: [{ to: escrowAddress, lamports: price }],
         }
       : {
           escrow: false,
           payTo: listing.seller_wallet,
           sellerWallet: listing.seller_wallet,
           amountLamports: price,
+          sellerLamports: price - fee,
           feeLamports: fee,
           treasury,
+          transfers: [
+            { to: listing.seller_wallet, lamports: price - fee },
+            ...(treasury && fee > 0 ? [{ to: treasury, lamports: fee }] : []),
+          ],
         },
   });
 }

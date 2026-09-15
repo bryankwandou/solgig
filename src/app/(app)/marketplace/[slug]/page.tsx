@@ -3,14 +3,11 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
-import {
-  PublicKey,
-  SystemProgram,
-  Transaction,
-} from "@solana/web3.js";
+import { buildPaymentTx } from "@/lib/solana/paymentTx";
 import { useAuth } from "@/lib/auth/useAuth";
 import { formatSol, shortAddress } from "@/lib/utils";
-import { Reveal, ProgressRing } from "@/components/motion";
+import { ProgressRing } from "@/components/motion";
+import { useCopy } from "@/lib/i18n";
 
 type Product = {
   id: string;
@@ -47,6 +44,7 @@ type BuyState =
 
 export default function ProductPage() {
   const { slug } = useParams<{ slug: string }>();
+  const t = useCopy().pages;
   const [product, setProduct] = useState<Product | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,11 +59,11 @@ export default function ProductPage() {
       .finally(() => setLoading(false));
   }, [slug]);
 
-  if (loading) return <p className="text-sm text-[var(--text-mut)]">Loading…</p>;
+  if (loading) return <p className="text-sm text-[var(--text-mut)]">{t.common.loading}</p>;
   if (!product)
     return (
       <p className="text-sm text-[var(--text-mut)]">
-        We could not find that product. It may have moved.
+        {t.product.notFound}
       </p>
     );
 
@@ -89,10 +87,10 @@ export default function ProductPage() {
         <h1 className="font-display mt-6 text-3xl font-bold">{product.title}</h1>
         <div className="mt-2 flex items-center gap-3 text-sm text-[var(--text-mut)]">
           <span>
-            by {product.seller_name || product.seller_username || shortAddress(product.seller_wallet)}
+            {t.product.by} {product.seller_name || product.seller_username || shortAddress(product.seller_wallet)}
           </span>
           <span>·</span>
-          <span>{product.total_purchases} sold</span>
+          <span>{t.common.sold(product.total_purchases)}</span>
           {product.rating_count > 0 && (
             <>
               <span>·</span>
@@ -103,13 +101,13 @@ export default function ProductPage() {
           )}
         </div>
         <p className="mt-6 whitespace-pre-wrap text-sm leading-relaxed text-[var(--text-mut)]">
-          {product.description || "No description yet."}
+          {product.description || t.product.noDescription}
         </p>
 
-        <h2 className="font-display mt-10 text-lg font-semibold">Reviews</h2>
+        <h2 className="font-display mt-10 text-lg font-semibold">{t.product.reviews}</h2>
         {reviews.length === 0 ? (
           <p className="mt-2 text-sm text-[var(--text-mut)]">
-            No reviews yet. Be the first to say how it went.
+            {t.product.noReviews}
           </p>
         ) : (
           <div className="mt-4 space-y-3">
@@ -138,12 +136,13 @@ function BuyPanel({ product }: { product: Product }) {
   const { publicKey, sendTransaction } = useWallet();
   const { connection } = useConnection();
   const [state, setState] = useState<BuyState>({ step: "idle" });
+  const t = useCopy().pages;
 
   const isOwn = user?.wallet_address === product.seller_wallet;
 
   async function buy() {
     if (!publicKey || !user) {
-      setState({ step: "error", message: "Connect a wallet to buy." });
+      setState({ step: "error", message: t.product.connectToBuy });
       return;
     }
     try {
@@ -156,24 +155,8 @@ function BuyPanel({ product }: { product: Product }) {
       if (created.error) throw new Error(created.error.message);
 
       const { order, payment } = created;
-      const sellerCut = payment.amountLamports - (payment.feeLamports ?? 0);
-
-      const tx = new Transaction().add(
-        SystemProgram.transfer({
-          fromPubkey: publicKey,
-          toPubkey: new PublicKey(payment.sellerWallet),
-          lamports: sellerCut,
-        }),
-      );
-      if (payment.treasury && payment.feeLamports > 0) {
-        tx.add(
-          SystemProgram.transfer({
-            fromPubkey: publicKey,
-            toPubkey: new PublicKey(payment.treasury),
-            lamports: payment.feeLamports,
-          }),
-        );
-      }
+      // Seller share plus platform fee, exactly as the server listed them.
+      const tx = buildPaymentTx(publicKey, payment);
 
       setState({ step: "paying" });
       const signature = await sendTransaction(tx, connection);
@@ -196,7 +179,7 @@ function BuyPanel({ product }: { product: Product }) {
     } catch (e) {
       setState({
         step: "error",
-        message: e instanceof Error ? e.message : "The purchase did not complete.",
+        message: e instanceof Error ? e.message : t.product.failed,
       });
     }
   }
@@ -207,7 +190,7 @@ function BuyPanel({ product }: { product: Product }) {
         {formatSol(product.price_lamports)}
       </div>
       <p className="mt-2 text-xs text-[var(--text-mut)]">
-        Paid on Solana. The transfer settles to the seller in a few seconds.
+        {t.product.paidNote}
       </p>
 
       {state.step === "done" ? (
@@ -225,18 +208,18 @@ function BuyPanel({ product }: { product: Product }) {
             style={{ background: "var(--brand-grad)" }}
           >
             {isOwn
-              ? "This is your listing"
+              ? t.product.own
               : state.step === "creating"
-                ? "Opening order…"
+                ? t.common.opening
                 : state.step === "paying"
-                  ? "Approve in your wallet…"
+                  ? t.common.approve
                   : state.step === "confirming"
-                    ? "Confirming on Solana…"
-                    : `Buy for ${formatSol(product.price_lamports)}`}
+                    ? t.common.confirming
+                    : t.product.buyFor(formatSol(product.price_lamports))}
           </button>
           {!user && (
             <p className="mt-3 text-xs text-[var(--text-mut)]">
-              Connect a wallet with the button in the top bar first.
+              {t.common.connectTopBar}
             </p>
           )}
           {["creating", "paying", "confirming"].includes(state.step) && (
@@ -262,6 +245,7 @@ function Success({
   orderId: string;
   signature: string;
 }) {
+  const t = useCopy().pages;
   const [rating, setRating] = useState(0);
   const [body, setBody] = useState("");
   const [sent, setSent] = useState(false);
@@ -293,7 +277,7 @@ function Success({
         className="rounded-[var(--radius-sm)] border p-3 text-sm"
         style={{ background: "var(--surface-2)" }}
       >
-        Done. The payment settled and your order is complete.
+        {t.product.done}
       </div>
       {fileUrl && (
         <a
@@ -303,7 +287,7 @@ function Success({
           className="mt-3 block rounded-full px-5 py-3 text-center text-sm font-semibold text-black"
           style={{ background: "var(--brand-grad)" }}
         >
-          Download your files
+          {t.product.download}
         </a>
       )}
       <a
@@ -312,17 +296,19 @@ function Success({
         rel="noreferrer"
         className="mt-3 block text-center font-mono text-xs text-[var(--text-mut)] underline"
       >
-        View the transaction
+        {t.common.viewTx}
       </a>
 
       {!sent ? (
         <div className="mt-5 border-t pt-4">
-          <p className="text-sm font-medium">Leave a review</p>
+          <p className="text-sm font-medium">{t.product.leaveReview}</p>
           <div className="mt-2 flex gap-1 text-lg">
             {[1, 2, 3, 4, 5].map((n) => (
               <button
                 key={n}
                 onClick={() => setRating(n)}
+                aria-label={`/5`}
+                aria-pressed={n <= rating}
                 style={{ color: n <= rating ? "var(--brand-mint)" : "var(--border)" }}
               >
                 ★
@@ -333,7 +319,7 @@ function Success({
             value={body}
             onChange={(e) => setBody(e.target.value)}
             rows={2}
-            placeholder="How was it?"
+            placeholder={t.product.howWas}
             className="mt-2 w-full resize-none rounded-[var(--radius-sm)] border bg-transparent p-2 text-sm outline-none"
           />
           <button
@@ -341,11 +327,11 @@ function Success({
             disabled={!rating}
             className="mt-2 w-full rounded-full border px-4 py-2 text-sm disabled:opacity-40"
           >
-            Submit review
+            {t.product.submitReview}
           </button>
         </div>
       ) : (
-        <p className="mt-4 text-sm text-[var(--text-mut)]">Thanks for the review.</p>
+        <p className="mt-4 text-sm text-[var(--text-mut)]">{t.product.thanks}</p>
       )}
     </div>
   );

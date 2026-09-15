@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/lib/auth/useAuth";
 import { formatSol, shortAddress } from "@/lib/utils";
 import { Reveal } from "@/components/motion";
+import { useCopy } from "@/lib/i18n";
 
 type Order = {
   id: string;
@@ -24,8 +25,11 @@ type Order = {
 
 export default function OrdersPage() {
   const { user } = useAuth();
+  const t = useCopy().pages;
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const net = process.env.NEXT_PUBLIC_SOLANA_NETWORK ?? "devnet";
 
   useEffect(() => {
@@ -37,48 +41,71 @@ export default function OrdersPage() {
     fetch("/api/orders")
       .then((r) => r.json())
       .then((d) => setOrders(d.items ?? []))
+      .catch(() => setNotice(t.orders.loadError))
       .finally(() => setLoading(false));
   }, [user]);
 
   async function download(orderId: string) {
-    const res = await fetch(`/api/orders/${orderId}/download`);
-    if (!res.ok) return;
-    const d = await res.json();
-    if (d.fileUrl) window.open(d.fileUrl, "_blank", "noreferrer");
+    setBusy(orderId);
+    setNotice(null);
+    try {
+      const res = await fetch(`/api/orders/${orderId}/download`);
+      const d = await res.json().catch(() => ({}));
+      if (d.fileUrl) window.open(d.fileUrl, "_blank", "noreferrer");
+      else setNotice(d.error?.message ?? t.orders.downloadUnavailable);
+    } finally {
+      setBusy(null);
+    }
   }
 
   async function markComplete(orderId: string) {
-    const res = await fetch(`/api/orders/${orderId}/complete`, { method: "POST" });
-    if (res.ok) {
-      setOrders((prev) =>
-        prev.map((o) => (o.id === orderId ? { ...o, status: "completed" } : o)),
-      );
+    setBusy(orderId);
+    setNotice(null);
+    try {
+      const res = await fetch(`/api/orders/${orderId}/complete`, { method: "POST" });
+      const d = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setOrders((prev) =>
+          prev.map((o) => (o.id === orderId ? { ...o, status: d.status ?? "completed" } : o)),
+        );
+      }
+      const message = d.message ?? d.error?.message;
+      if (message) setNotice(message);
+    } catch {
+      setNotice(t.common.offline);
+    } finally {
+      setBusy(null);
     }
   }
 
   if (!user) {
     return (
       <p className="text-sm text-[var(--text-mut)]">
-        Connect a wallet to see what you have bought.
+        {t.orders.connect}
       </p>
     );
   }
-  if (loading) return <p className="text-sm text-[var(--text-mut)]">Loading…</p>;
+  if (loading) return <p className="text-sm text-[var(--text-mut)]">{t.common.loading}</p>;
 
   return (
     <div>
-      <h1 className="font-display text-2xl font-bold">Your orders</h1>
+      <h1 className="font-display text-2xl font-bold">{t.orders.title}</h1>
       <p className="mt-1 text-sm text-[var(--text-mut)]">
-        Everything you have bought, with downloads that stay available here.
+        {t.orders.sub}
       </p>
+      {notice && (
+        <p role="status" className="mt-4 rounded-[var(--radius-sm)] border px-3 py-2 text-sm">
+          {notice}
+        </p>
+      )}
 
       {orders.length === 0 ? (
         <p className="mt-8 text-sm text-[var(--text-mut)]">
-          Nothing here yet.{" "}
+          {t.orders.emptyBefore}{" "}
           <Link href="/marketplace" className="underline">
-            Browse the marketplace
+            {t.orders.browse}
           </Link>{" "}
-          to find your first pick.
+          {t.orders.emptyAfter}
         </p>
       ) : (
         <div className="mt-6 space-y-3">
@@ -105,7 +132,7 @@ export default function OrdersPage() {
                     <span className="font-mono">{o.order_number}</span>
                     <span>·</span>
                     <span>
-                      from{" "}
+                      {t.orders.from}{" "}
                       {o.seller_name || o.seller_username || shortAddress(o.seller_wallet)}
                     </span>
                     <span>·</span>
@@ -119,27 +146,34 @@ export default function OrdersPage() {
                       color: o.status === "completed" ? "var(--brand-mint)" : "var(--text-mut)",
                     }}
                   >
-                    {o.status}
+                    {t.status[o.status] ?? o.status}
                   </span>
                   <span className="text-sm font-semibold">
-                    {formatSol(o.amount_lamports)}
+                    {formatSol(Number(o.amount_lamports))}
                   </span>
                   {o.status === "completed" && o.has_file && (
                     <button
                       onClick={() => download(o.id)}
-                      className="rounded-full px-4 py-1.5 text-xs font-semibold text-black"
+                      disabled={busy === o.id}
+                      className="rounded-full px-4 py-1.5 text-xs font-semibold text-black disabled:opacity-60"
                       style={{ background: "var(--brand-grad)" }}
                     >
-                      Download
+                      {busy === o.id ? t.orders.opening : t.orders.download}
                     </button>
                   )}
-                  {o.order_type === "service" && o.status === "paid" && (
+                  {o.order_type === "service" &&
+                    (o.status === "paid" || o.status === "releasing") && (
                     <button
                       onClick={() => markComplete(o.id)}
-                      className="rounded-full px-4 py-1.5 text-xs font-semibold text-black"
+                      disabled={busy === o.id}
+                      className="rounded-full px-4 py-1.5 text-xs font-semibold text-black disabled:opacity-60"
                       style={{ background: "var(--brand-grad)" }}
                     >
-                      Mark complete
+                      {busy === o.id
+                        ? t.orders.releasing
+                        : o.status === "releasing"
+                          ? t.orders.checkPayout
+                          : t.orders.accept}
                     </button>
                   )}
                   {o.payment_tx_signature && (
@@ -149,7 +183,7 @@ export default function OrdersPage() {
                       rel="noreferrer"
                       className="text-xs text-[var(--text-mut)] underline"
                     >
-                      Tx
+                      {t.common.tx}
                     </a>
                   )}
                 </div>

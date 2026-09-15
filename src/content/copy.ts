@@ -1,10 +1,11 @@
 /**
  * Every user-facing string lives here so the wording can be reviewed in one place.
- * Rules: no emoji, plain spoken English, one idea per line, written to "you".
+ * English is the default; each other locale mirrors the same shape.
+ * Rules: no emoji, plain spoken language, one idea per line, written to "you".
  * Nothing on this page claims traction we do not have.
  */
 
-export const copy = {
+export const en = {
   brand: {
     name: "SolGig",
     tagline: "The marketplace both people and AI agents can buy from.",
@@ -17,8 +18,9 @@ export const copy = {
       { label: "How payment clears", href: "#trust" },
       { label: "From the feed", href: "#feed" },
     ],
-    signIn: "Connect wallet",
+    signIn: "Open the app",
     cta: "Start selling",
+    language: "Language",
   },
 
   hero: {
@@ -29,7 +31,8 @@ export const copy = {
     secondary: "See the agent buy something",
     statFee: "Platform fee, nothing hidden",
     statSettle: "Typical time for payment to clear",
-    statReceipts: "Receipts you can check on-chain",
+    statEndpoint: "Endpoint an agent needs to shop",
+    live: "Live on Solana",
   },
 
   proof: {
@@ -52,7 +55,7 @@ export const copy = {
       {
         k: "03",
         title: "Get paid on delivery",
-        body: "Digital goods unlock the moment payment is verified on-chain. Service money waits in escrow and moves to you when the buyer signs off.",
+        body: "Digital goods open up the moment payment is verified on-chain. Service money waits in escrow and moves to you when the buyer signs off.",
       },
     ],
   },
@@ -75,6 +78,7 @@ export const copy = {
       },
     ],
     demo: "Run the demo: a fresh keypair with no history discovers a product, pays for it, and downloads it. About thirty seconds, no browser, no human.",
+    openCatalog: "Open the live catalog",
   },
 
   sellers: {
@@ -90,8 +94,8 @@ export const copy = {
     forBuyers: {
       heading: "If you buy",
       points: [
-        "Your payment is held until the work arrives.",
-        "The server checks every payment against the chain before anything unlocks.",
+        "Service payments are held in escrow until you accept the work.",
+        "The server checks every payment against the chain before anything opens up.",
         "Every receipt is a transaction you can look up yourself.",
       ],
     },
@@ -102,14 +106,15 @@ export const copy = {
     sub: "Money moves on Solana, and the order only advances after the server has verified the transfer on-chain — signer, amount, and balance change.",
     nodes: [
       { title: "Buyer pays", body: "One transaction: the price to the seller or escrow, the fee to the platform." },
-      { title: "Server verifies", body: "The transaction is fetched from the chain and checked line by line. No verification, no unlock." },
-      { title: "Work changes hands", body: "Files unlock instantly. Service escrow releases when the buyer accepts, minus the 2.5 percent fee." },
+      { title: "Server verifies", body: "The transaction is fetched from the chain and checked line by line. No verification, no download." },
+      { title: "Work changes hands", body: "Files open instantly. Service escrow releases when the buyer accepts, minus the 2.5 percent fee." },
     ],
   },
 
   feed: {
     title: "A look at the feed",
     sub: "Read-only preview, pulled from the same card the app uses.",
+    buy: "Buy",
     posts: [
       {
         author: "mira.lens",
@@ -148,13 +153,563 @@ export const copy = {
     secondary: "Read the agent catalog",
   },
 
+  landing: {
+    figures: ["Kept on each sale", "To publish a listing", "Median payout time", "On-chain and final"],
+    chargebacks: " chargebacks",
+    replies: "replies",
+    buy: "Buy",
+    step: "step",
+    replayed: "replayed from a real devnet transaction",
+    gallery: "See the motion gallery",
+  },
+
   footer: {
     tagline: "A marketplace on Solana for people who make things — and the agents that buy them.",
     columns: [
-      { title: "Product", links: ["Feed", "Marketplace", "Services", "Orders"] },
-      { title: "Build", links: ["Agent catalog", "Health", "GitHub", "Roadmap"] },
-      { title: "Company", links: ["About", "Contact"] },
+      {
+        title: "Product",
+        links: [
+          { label: "Feed", href: "/feed" },
+          { label: "Marketplace", href: "/marketplace" },
+          { label: "Services", href: "/services" },
+          { label: "Orders", href: "/orders" },
+        ],
+      },
+      {
+        title: "Build",
+        links: [
+          { label: "Agent catalog", href: "/api/agent/catalog" },
+          { label: "Health", href: "/api/health" },
+          { label: "Source code", href: "https://github.com/bryankwandou/solgig" },
+        ],
+      },
+      {
+        title: "Networks",
+        links: [
+          { label: "Devnet demo", href: "https://solgig.vercel.app" },
+          { label: "Mainnet", href: "https://solgig-mainnet.vercel.app" },
+        ],
+      },
     ],
     legal: "SolGig runs on Solana. Payment is on-chain and final once an order is accepted.",
   },
-} as const;
+
+  app: {
+    nav: [
+      { href: "/feed", label: "Feed" },
+      { href: "/marketplace", label: "Marketplace" },
+      { href: "/services", label: "Services" },
+      { href: "/orders", label: "Orders" },
+      { href: "/dashboard", label: "Dashboard" },
+    ],
+    mainnetBanner: "Mainnet — real SOL, real payments. Transactions cannot be reversed.",
+    devnetBanner: "Devnet demo — test SOL only, no real money changes hands.",
+    signingIn: "Signing in…",
+    signOut: "Sign out",
+    connectedAs: "Connected as",
+  },
+
+  pages: {
+    common: {
+      loading: "Loading…",
+      loadMore: "Load more",
+      send: "Send",
+      tx: "Tx",
+      viewTx: "View the transaction",
+      opening: "Opening order…",
+      approve: "Approve in your wallet…",
+      confirming: "Confirming on Solana…",
+      connectTopBar: "Connect a wallet with the button in the top bar first.",
+      offline: "Could not reach SolGig. Check your connection and try again.",
+      sold: (n: number) => `${n} sold`,
+      delivery: (n: number) => (n === 1 ? "1 day delivery" : `${n} day delivery`),
+    },
+    status: {
+      pending: "waiting for payment",
+      paid: "paid",
+      releasing: "paying out",
+      completed: "completed",
+    } as Record<string, string>,
+    feed: {
+      title: "Feed",
+      sub: "What people are making and selling right now.",
+      placeholder: "Share something you made, or a slot you are opening up.",
+      post: "Post",
+      posting: "Posting…",
+      connect: "Connect a wallet to post and to react.",
+      loading: "Loading the feed…",
+      empty: "Your feed is quiet. Be the first to post something.",
+      comments: (n: number) => (n === 1 ? "1 comment" : `${n} comments`),
+      addComment: "Add a comment",
+      joinConvo: "Connect a wallet to join the conversation.",
+    },
+    market: {
+      title: "Marketplace",
+      sub: "Digital goods from creators on Solana.",
+      search: "Search listings",
+      empty: "Nothing here yet. List the first item from your dashboard and it lands at the top.",
+    },
+    product: {
+      notFound: "We could not find that product. It may have moved.",
+      by: "by",
+      noDescription: "No description yet.",
+      reviews: "Reviews",
+      noReviews: "No reviews yet. Be the first to say how it went.",
+      paidNote: "Paid on Solana. The transfer settles to the seller in a few seconds.",
+      buyFor: (price: string) => `Buy for ${price}`,
+      own: "This is your listing",
+      connectToBuy: "Connect a wallet to buy.",
+      failed: "The purchase did not complete.",
+      done: "Done. The payment settled and your order is complete.",
+      download: "Download your files",
+      leaveReview: "Leave a review",
+      howWas: "How was it?",
+      submitReview: "Submit review",
+      thanks: "Thanks for the review.",
+    },
+    services: {
+      title: "Services",
+      sub: "Book time with people who make things. Payment is held in escrow on Solana, and it reaches the seller once you mark the work as delivered.",
+      empty: "No services listed yet. Add one from your dashboard.",
+      bookFor: (price: string) => `Book for ${price}`,
+      own: "Your listing",
+      connect: "Connect a wallet first.",
+      failed: "The booking did not complete.",
+      booked: "Booked. Track it on your Orders page and accept it when the work lands.",
+    },
+    orders: {
+      connect: "Connect a wallet to see what you have bought.",
+      loadError: "Your orders did not load. Refresh the page to try again.",
+      title: "Your orders",
+      sub: "Everything you have bought, with downloads that stay available here.",
+      emptyBefore: "Nothing here yet.",
+      browse: "Browse the marketplace",
+      emptyAfter: "to find your first pick.",
+      from: "from",
+      opening: "Opening…",
+      download: "Download",
+      downloadUnavailable: "The download is not available right now.",
+      releasing: "Releasing…",
+      checkPayout: "Check payout",
+      accept: "Accept and release",
+    },
+    dashboard: {
+      connect: "Connect a wallet to see your dashboard.",
+      connectHint: "Use the button in the top bar. You will sign a short message to prove the wallet is yours.",
+      title: "Dashboard",
+      newListing: "New listing",
+      earned: "Earned",
+      completed: "Completed orders",
+      reputation: "Reputation",
+      products: "Your products",
+      noProducts: "No products yet. Create one to start selling.",
+      purchases: "Your purchases",
+      noPurchases: "No purchases yet.",
+      order: "Order",
+      sales: "Recent sales",
+      noSales: "No sales yet. Share a listing in the feed to get the first one.",
+    },
+    newListing: {
+      connect: "Connect a wallet to create a listing.",
+      invalid: "Add a title and a price of at least 0.001 SOL.",
+      title: "New listing",
+      sub: "Publish a digital product or a service, priced in SOL.",
+      kinds: { product: "Product", service: "Service" },
+      fTitle: "Title",
+      fDescription: "Description",
+      fPrice: "Price in SOL",
+      fType: "Type",
+      fFile: "Download link (given to the buyer after payment)",
+      fDays: "Delivery in days",
+      fTags: "Tags (comma separated)",
+      phTitle: "Warm street tones preset pack",
+      phDescription: "What it is and what the buyer gets.",
+      phTags: "lightroom, presets, street",
+      types: {
+        template: "Template",
+        ebook: "Ebook",
+        code: "Code",
+        design: "Design",
+        music: "Music",
+        video: "Video",
+        course: "Course",
+        preset: "Preset",
+        font: "Font",
+        other: "Other",
+      } as Record<string, string>,
+      saveFailed: "Could not save the listing.",
+      publishing: "Publishing…",
+      publish: "Publish listing",
+    },
+    profile: {
+      notFound: "No one goes by that here.",
+      followers: (n: number) => `${n} followers`,
+      following: (n: number) => `${n} following`,
+      ordersDone: (n: number) => `${n} orders completed`,
+      follow: "Follow",
+      followingBtn: "Following",
+      products: "Products",
+      services: "Services",
+      posts: "Recent posts",
+      likes: (n: number) => `${n} likes`,
+      comments: (n: number) => `${n} comments`,
+    },
+  },
+};
+
+export type Copy = typeof en;
+
+export const id: Copy = {
+  brand: {
+    name: "SolGig",
+    tagline: "Marketplace tempat manusia dan agen AI sama-sama bisa belanja.",
+  },
+
+  nav: {
+    links: [
+      { label: "Cara kerja", href: "#how" },
+      { label: "Untuk agen", href: "#agents" },
+      { label: "Alur pembayaran", href: "#trust" },
+      { label: "Dari feed", href: "#feed" },
+    ],
+    signIn: "Buka aplikasi",
+    cta: "Mulai jualan",
+    language: "Bahasa",
+  },
+
+  hero: {
+    eyebrow: "Sudah jalan di Solana devnet dan mainnet",
+    title: "Pembeli berikutnya mungkin bukan manusia.",
+    sub: "SolGig adalah marketplace untuk siapa saja yang punya keypair Solana — desainer, developer, musisi, dan agen AI yang bekerja untuk mereka. Agen tidak bisa buka rekening bank atau lolos cek kartu kredit. Tapi agen bisa menandatangani transaksi, dan di sini itu sudah cukup.",
+    primary: "Mulai jualan",
+    secondary: "Lihat agen berbelanja",
+    statFee: "Biaya platform, tanpa biaya tersembunyi",
+    statSettle: "Rata-rata waktu pembayaran masuk",
+    statEndpoint: "Endpoint yang dibutuhkan agen untuk belanja",
+    live: "Aktif di Solana",
+  },
+
+  proof: {
+    line: "Semua yang tertulis di bawah ini sedang berjalan sekarang, di kedua jaringan",
+  },
+
+  how: {
+    title: "Tiga langkah dari pasang listing sampai dibayar",
+    steps: [
+      {
+        k: "01",
+        title: "Pasang karyamu",
+        body: "Unggah file atau jelaskan jasamu, lalu tentukan harga dalam SOL. Listing langsung muncul di etalase untuk manusia dan di katalog yang bisa dibaca mesin.",
+      },
+      {
+        k: "02",
+        title: "Ditemukan siapa saja, atau apa saja",
+        body: "Orang menjelajah lewat feed dan marketplace. Agen membaca endpoint katalog, membandingkan harga, dan memilih sendiri. Kamu tidak perlu melakukan apa pun yang berbeda.",
+      },
+      {
+        k: "03",
+        title: "Dibayar saat karya diterima",
+        body: "Produk digital langsung bisa diunduh begitu pembayaran terverifikasi on-chain. Uang untuk jasa ditahan di escrow dan baru dikirim ke kamu setelah pembeli menyetujui hasilnya.",
+      },
+    ],
+  },
+
+  agents: {
+    title: "Dibangun supaya mesin bisa jadi pelanggan",
+    sub: "Satu endpoint publik menjelaskan semua listing beserta langkah persis untuk login, membayar, dan mengambil barang. Tidak perlu pasang SDK, tidak perlu minta API key.",
+    points: [
+      {
+        title: "Login dengan keypair",
+        body: "Login cukup dengan menandatangani nonce. Kalau bisa menandatangani pesan Solana, kamu sudah punya akun. Berlaku untuk semua wallet, termasuk agen.",
+      },
+      {
+        title: "Katalog yang menjelaskan dirinya sendiri",
+        body: "GET /api/agent/catalog mengembalikan semua produk dan jasa beserta harganya, lengkap dengan resep alur pembelian. Agen yang belum pernah melihat SolGig bisa menyelesaikan pembelian hanya dari satu respons itu.",
+      },
+      {
+        title: "Tidak ada yang dipercaya begitu saja",
+        body: "Saat pembeli bilang sudah bayar, server mengambil transaksinya langsung dari chain dan memeriksa penanda tangan, jumlah, dan perubahan saldo. Satu tanda tangan hanya bisa melunasi satu pesanan.",
+      },
+    ],
+    demo: "Coba demonya: keypair baru tanpa riwayat apa pun menemukan produk, membayarnya, lalu mengunduhnya. Sekitar tiga puluh detik, tanpa browser, tanpa manusia.",
+    openCatalog: "Buka katalog live",
+  },
+
+  sellers: {
+    title: "Dibuat untuk orang yang menjual karyanya sendiri",
+    forSellers: {
+      heading: "Kalau kamu penjual",
+      points: [
+        "Kamu menyimpan 97,5 persen dari setiap penjualan.",
+        "Listing-mu terlihat oleh pembeli manusia dan agen tanpa kerja tambahan.",
+        "Pengikutmu tetap milikmu. Tidak ada yang menyewakan audiensmu kembali ke kamu.",
+      ],
+    },
+    forBuyers: {
+      heading: "Kalau kamu pembeli",
+      points: [
+        "Pembayaran jasa ditahan di escrow sampai kamu menyetujui hasilnya.",
+        "Server memeriksa setiap pembayaran ke chain sebelum apa pun bisa dibuka.",
+        "Setiap bukti bayar adalah transaksi yang bisa kamu cek sendiri.",
+      ],
+    },
+  },
+
+  trust: {
+    title: "Bagaimana pembayaran benar-benar diproses",
+    sub: "Uang berpindah di Solana, dan pesanan baru lanjut setelah server memverifikasi transfernya on-chain: penanda tangan, jumlah, dan perubahan saldo.",
+    nodes: [
+      { title: "Pembeli membayar", body: "Satu transaksi: harga ke penjual atau escrow, biaya ke platform." },
+      { title: "Server memverifikasi", body: "Transaksi diambil dari chain dan diperiksa baris demi baris. Tanpa verifikasi, tidak ada unduhan." },
+      { title: "Karya berpindah tangan", body: "File langsung bisa dibuka. Escrow jasa cair saat pembeli menyetujui, dipotong biaya 2,5 persen." },
+    ],
+  },
+
+  feed: {
+    title: "Sekilas isi feed",
+    sub: "Pratinjau baca-saja, memakai kartu yang sama dengan aplikasinya.",
+    buy: "Beli",
+    posts: [
+      {
+        author: "mira.lens",
+        handle: "@mira",
+        time: "2j",
+        body: "Paket Lightroom baru sudah rilis. Nuansa jalanan yang hangat, 12 preset, tinggal seret.",
+        price: "1.8 SOL",
+        likes: 214,
+        comments: 31,
+      },
+      {
+        author: "kojibeats",
+        handle: "@koji",
+        time: "5j",
+        body: "Buka dua slot mixing minggu ini. Kirim rough-mu, nanti low end-nya aku rapikan.",
+        price: "0.9 SOL",
+        likes: 98,
+        comments: 12,
+      },
+      {
+        author: "studio.fauna",
+        handle: "@fauna",
+        time: "1h",
+        body: "Dashboard Notion untuk freelancer. Mencatat invoice, klien, dan tagihan yang belum dibayar.",
+        price: "3.2 SOL",
+        likes: 377,
+        comments: 64,
+      },
+    ],
+  },
+
+  finalCta: {
+    title: "Marketplace pertama tempat agenmu bisa belanja",
+    sub: "Pasang sesuatu hari ini. Bisa jadi kamu tidak akan pernah bertemu pembeli berikutnya, karena pembelinya adalah skrip dengan keypair dan anggaran.",
+    primary: "Mulai jualan",
+    secondary: "Baca katalog agen",
+  },
+
+  landing: {
+    figures: ["Masuk ke kantongmu tiap penjualan", "Untuk memasang produk", "Rata-rata waktu pencairan", "Tercatat on-chain, tidak bisa ditarik"],
+    chargebacks: " chargeback",
+    replies: "balasan",
+    buy: "Beli",
+    step: "langkah",
+    replayed: "diputar ulang dari transaksi devnet sungguhan",
+    gallery: "Lihat galeri animasi",
+  },
+
+  footer: {
+    tagline: "Marketplace di Solana untuk orang yang berkarya, dan agen yang membeli karyanya.",
+    columns: [
+      {
+        title: "Produk",
+        links: [
+          { label: "Feed", href: "/feed" },
+          { label: "Marketplace", href: "/marketplace" },
+          { label: "Jasa", href: "/services" },
+          { label: "Pesanan", href: "/orders" },
+        ],
+      },
+      {
+        title: "Untuk developer",
+        links: [
+          { label: "Katalog agen", href: "/api/agent/catalog" },
+          { label: "Status server", href: "/api/health" },
+          { label: "Kode sumber", href: "https://github.com/bryankwandou/solgig" },
+        ],
+      },
+      {
+        title: "Jaringan",
+        links: [
+          { label: "Demo devnet", href: "https://solgig.vercel.app" },
+          { label: "Mainnet", href: "https://solgig-mainnet.vercel.app" },
+        ],
+      },
+    ],
+    legal: "SolGig berjalan di Solana. Pembayaran terjadi on-chain dan final setelah pesanan diterima.",
+  },
+
+  app: {
+    nav: [
+      { href: "/feed", label: "Feed" },
+      { href: "/marketplace", label: "Marketplace" },
+      { href: "/services", label: "Jasa" },
+      { href: "/orders", label: "Pesanan" },
+      { href: "/dashboard", label: "Dasbor" },
+    ],
+    mainnetBanner: "Mainnet: SOL asli, pembayaran asli. Transaksi tidak bisa dibatalkan.",
+    devnetBanner: "Demo devnet: hanya SOL uji coba, tidak ada uang sungguhan yang berpindah.",
+    signingIn: "Sedang masuk…",
+    signOut: "Keluar",
+    connectedAs: "Terhubung sebagai",
+  },
+
+  pages: {
+    common: {
+      loading: "Memuat…",
+      loadMore: "Tampilkan lagi",
+      send: "Kirim",
+      tx: "Tx",
+      viewTx: "Lihat transaksinya",
+      opening: "Membuat pesanan…",
+      approve: "Setujui di wallet kamu…",
+      confirming: "Menunggu konfirmasi Solana…",
+      connectTopBar: "Hubungkan wallet dulu lewat tombol di bagian atas.",
+      offline: "SolGig tidak bisa dihubungi. Cek koneksimu lalu coba lagi.",
+      sold: (n: number) => `${n} terjual`,
+      delivery: (n: number) => `Selesai dalam ${n} hari`,
+    },
+    status: {
+      pending: "menunggu pembayaran",
+      paid: "sudah dibayar",
+      releasing: "dana sedang dikirim",
+      completed: "selesai",
+    },
+    feed: {
+      title: "Feed",
+      sub: "Karya dan jualan orang-orang hari ini.",
+      placeholder: "Tunjukkan karyamu, atau kabari kalau ada slot jasa yang baru dibuka.",
+      post: "Unggah",
+      posting: "Mengunggah…",
+      connect: "Hubungkan wallet untuk ikut posting dan memberi reaksi.",
+      loading: "Memuat feed…",
+      empty: "Belum ada yang posting. Jadilah yang pertama.",
+      comments: (n: number) => `${n} komentar`,
+      addComment: "Tulis komentar",
+      joinConvo: "Hubungkan wallet untuk ikut ngobrol.",
+    },
+    market: {
+      title: "Marketplace",
+      sub: "Produk digital dari para kreator di Solana.",
+      search: "Cari produk",
+      empty: "Masih kosong. Pasang produk pertamamu dari dasbor, nanti muncul paling atas.",
+    },
+    product: {
+      notFound: "Produk itu tidak ketemu. Mungkin sudah dipindah.",
+      by: "dari",
+      noDescription: "Belum ada deskripsi.",
+      reviews: "Ulasan",
+      noReviews: "Belum ada ulasan. Ceritakan pengalamanmu lebih dulu.",
+      paidNote: "Dibayar di Solana. Dana sampai ke penjual dalam hitungan detik.",
+      buyFor: (price: string) => `Beli seharga ${price}`,
+      own: "Ini produkmu sendiri",
+      connectToBuy: "Hubungkan wallet untuk membeli.",
+      failed: "Pembelian gagal diselesaikan.",
+      done: "Beres. Pembayaran sudah masuk dan pesananmu selesai.",
+      download: "Unduh file kamu",
+      leaveReview: "Beri ulasan",
+      howWas: "Bagaimana hasilnya?",
+      submitReview: "Kirim ulasan",
+      thanks: "Terima kasih atas ulasanmu.",
+    },
+    services: {
+      title: "Jasa",
+      sub: "Pesan waktu dari orang-orang yang berkarya. Pembayaran ditahan di escrow Solana dan baru diteruskan ke penjual setelah kamu menyatakan pekerjaannya sudah diterima.",
+      empty: "Belum ada jasa yang dipasang. Tambahkan dari dasbor.",
+      bookFor: (price: string) => `Pesan seharga ${price}`,
+      own: "Jasamu sendiri",
+      connect: "Hubungkan wallet dulu.",
+      failed: "Pemesanan gagal diselesaikan.",
+      booked: "Sudah dipesan. Pantau di halaman Pesanan, lalu terima begitu hasilnya datang.",
+    },
+    orders: {
+      connect: "Hubungkan wallet untuk melihat barang yang sudah kamu beli.",
+      loadError: "Pesananmu gagal dimuat. Muat ulang halaman untuk mencoba lagi.",
+      title: "Pesananmu",
+      sub: "Semua yang pernah kamu beli, dengan tautan unduhan yang tetap tersedia di sini.",
+      emptyBefore: "Belum ada pesanan.",
+      browse: "Jelajahi marketplace",
+      emptyAfter: "untuk menemukan pilihan pertamamu.",
+      from: "dari",
+      opening: "Membuka…",
+      download: "Unduh",
+      downloadUnavailable: "Unduhan sedang tidak tersedia.",
+      releasing: "Mengirim dana…",
+      checkPayout: "Cek pengiriman dana",
+      accept: "Terima dan cairkan",
+    },
+    dashboard: {
+      connect: "Hubungkan wallet untuk membuka dasbor.",
+      connectHint: "Pakai tombol di bagian atas. Kamu akan menandatangani pesan singkat sebagai bukti bahwa wallet itu milikmu.",
+      title: "Dasbor",
+      newListing: "Pasang produk",
+      earned: "Pendapatan",
+      completed: "Pesanan selesai",
+      reputation: "Reputasi",
+      products: "Produkmu",
+      noProducts: "Belum ada produk. Buat satu untuk mulai berjualan.",
+      purchases: "Pembelianmu",
+      noPurchases: "Belum ada pembelian.",
+      order: "Pesanan",
+      sales: "Penjualan terbaru",
+      noSales: "Belum ada penjualan. Bagikan produkmu di feed supaya pembeli pertama datang.",
+    },
+    newListing: {
+      connect: "Hubungkan wallet untuk memasang produk atau jasa.",
+      invalid: "Isi judul dan harga minimal 0,001 SOL.",
+      title: "Pasang baru",
+      sub: "Jual produk digital atau jasa, dengan harga dalam SOL.",
+      kinds: { product: "Produk", service: "Jasa" },
+      fTitle: "Judul",
+      fDescription: "Deskripsi",
+      fPrice: "Harga dalam SOL",
+      fType: "Jenis",
+      fFile: "Tautan unduhan (diberikan ke pembeli setelah membayar)",
+      fDays: "Lama pengerjaan (hari)",
+      fTags: "Tag (pisahkan dengan koma)",
+      phTitle: "Paket preset nuansa jalanan yang hangat",
+      phDescription: "Apa isinya dan apa yang didapat pembeli.",
+      phTags: "lightroom, preset, jalanan",
+      types: {
+        template: "Template",
+        ebook: "Ebook",
+        code: "Kode",
+        design: "Desain",
+        music: "Musik",
+        video: "Video",
+        course: "Kursus",
+        preset: "Preset",
+        font: "Font",
+        other: "Lainnya",
+      },
+      saveFailed: "Gagal menyimpan.",
+      publishing: "Menerbitkan…",
+      publish: "Terbitkan",
+    },
+    profile: {
+      notFound: "Tidak ada pengguna dengan nama itu.",
+      followers: (n: number) => `${n} pengikut`,
+      following: (n: number) => `${n} diikuti`,
+      ordersDone: (n: number) => `${n} pesanan selesai`,
+      follow: "Ikuti",
+      followingBtn: "Mengikuti",
+      products: "Produk",
+      services: "Jasa",
+      posts: "Postingan terbaru",
+      likes: (n: number) => `${n} suka`,
+      comments: (n: number) => `${n} komentar`,
+    },
+  },
+};
+
+/** English default, kept for modules that do not need to switch language. */
+export const copy = en;

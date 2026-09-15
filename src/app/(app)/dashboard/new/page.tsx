@@ -4,9 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/useAuth";
 import { solToLamports } from "@/lib/utils";
+import { useCopy } from "@/lib/i18n";
 
 export default function NewListingPage() {
   const { user } = useAuth();
+  const t = useCopy().pages.newListing;
   const router = useRouter();
   const [kind, setKind] = useState<"product" | "service">("product");
   const [title, setTitle] = useState("");
@@ -22,21 +24,21 @@ export default function NewListingPage() {
   if (!user)
     return (
       <p className="text-sm text-[var(--text-mut)]">
-        Connect a wallet to create a listing.
+        {t.connect}
       </p>
     );
 
   async function submit() {
     setError(null);
     const price = parseFloat(priceSol);
-    if (!title.trim() || isNaN(price) || price < 0) {
-      setError("Add a title and a valid price.");
+    if (!title.trim() || !Number.isFinite(price) || price < 0.001) {
+      setError(t.invalid);
       return;
     }
     setBusy(true);
     const tagList = tags
       .split(",")
-      .map((t) => t.trim())
+      .map((s) => s.trim())
       .filter(Boolean);
 
     const body =
@@ -66,7 +68,7 @@ export default function NewListingPage() {
     setBusy(false);
     if (!res.ok) {
       const d = await res.json().catch(() => ({}));
-      setError(d.error?.message ?? "Could not save the listing.");
+      setError(d.error?.message ?? t.saveFailed);
       return;
     }
     router.push(kind === "product" ? "/marketplace" : "/services");
@@ -74,9 +76,9 @@ export default function NewListingPage() {
 
   return (
     <div className="mx-auto max-w-xl">
-      <h1 className="font-display text-2xl font-bold">New listing</h1>
+      <h1 className="font-display text-2xl font-bold">{t.title}</h1>
       <p className="mt-1 text-sm text-[var(--text-mut)]">
-        Publish a digital product or a service. You can price it in SOL.
+        {t.sub}
       </p>
 
       <div className="mt-6 flex gap-2">
@@ -84,44 +86,45 @@ export default function NewListingPage() {
           <button
             key={k}
             onClick={() => setKind(k)}
-            className="rounded-full border px-4 py-2 text-sm capitalize"
+            aria-pressed={kind === k}
+            className="rounded-full border px-4 py-2 text-sm"
             style={kind === k ? { background: "var(--brand-grad)", color: "#000" } : undefined}
           >
-            {k}
+            {t.kinds[k]}
           </button>
         ))}
       </div>
 
       <div className="mt-6 space-y-4">
-        <Field label="Title">
-          <input value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls} placeholder="Warm street tones preset pack" />
+        <Field label={t.fTitle}>
+          <input value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls} placeholder={t.phTitle} />
         </Field>
-        <Field label="Description">
-          <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} className={inputCls} placeholder="What it is and what the buyer gets." />
+        <Field label={t.fDescription}>
+          <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} className={inputCls} placeholder={t.phDescription} />
         </Field>
-        <Field label="Price in SOL">
+        <Field label={t.fPrice}>
           <input value={priceSol} onChange={(e) => setPriceSol(e.target.value)} inputMode="decimal" className={inputCls} placeholder="1.5" />
         </Field>
         {kind === "product" ? (
           <>
-            <Field label="Type">
+            <Field label={t.fType}>
               <select value={type} onChange={(e) => setType(e.target.value)} className={inputCls}>
-                {["template", "ebook", "code", "design", "music", "video", "course", "preset", "font", "other"].map((t) => (
-                  <option key={t} value={t}>{t}</option>
+                {["template", "ebook", "code", "design", "music", "video", "course", "preset", "font", "other"].map((v) => (
+                  <option key={v} value={v}>{t.types[v] ?? v}</option>
                 ))}
               </select>
             </Field>
-            <Field label="Download link (given to the buyer after payment)">
+            <Field label={t.fFile}>
               <input value={fileUrl} onChange={(e) => setFileUrl(e.target.value)} className={inputCls} placeholder="https://…" />
             </Field>
           </>
         ) : (
-          <Field label="Delivery in days">
+          <Field label={t.fDays}>
             <input value={days} onChange={(e) => setDays(e.target.value)} inputMode="numeric" className={inputCls} placeholder="3" />
           </Field>
         )}
-        <Field label="Tags (comma separated)">
-          <input value={tags} onChange={(e) => setTags(e.target.value)} className={inputCls} placeholder="lightroom, presets, street" />
+        <Field label={t.fTags}>
+          <input value={tags} onChange={(e) => setTags(e.target.value)} className={inputCls} placeholder={t.phTags} />
         </Field>
 
         {error && <p className="text-sm" style={{ color: "var(--err)" }}>{error}</p>}
@@ -132,7 +135,7 @@ export default function NewListingPage() {
           className="w-full rounded-full px-5 py-3 text-sm font-semibold text-black disabled:opacity-40"
           style={{ background: "var(--brand-grad)" }}
         >
-          {busy ? "Publishing…" : "Publish listing"}
+          {busy ? t.publishing : t.publish}
         </button>
       </div>
     </div>
