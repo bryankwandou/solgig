@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { sql } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth/current-user";
-import { slugify } from "@/lib/utils";
+import { slugify, isHttpUrl } from "@/lib/utils";
 import { rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
@@ -36,10 +36,10 @@ const CreateProduct = z.object({
   title: z.string().min(3).max(120),
   description: z.string().max(5000).default(""),
   short_description: z.string().max(200).optional(),
-  thumbnail_url: z.string().url().optional().or(z.literal("")),
+  thumbnail_url: z.string().url().refine(isHttpUrl).optional().or(z.literal("")),
   product_type: z.string().default("other"),
   tags: z.array(z.string()).max(10).default([]),
-  file_url: z.string().url().optional().or(z.literal("")),
+  file_url: z.string().url().refine(isHttpUrl).optional().or(z.literal("")),
   // Floor of 0.001 SOL: smaller transfers can fail the rent-exempt minimum.
   price_lamports: z.number().int().min(1_000_000),
 });
