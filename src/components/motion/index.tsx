@@ -41,6 +41,19 @@ function offset(dir: Dir, d = 24) {
   }
 }
 
+/** Reports whether the visitor asked the system to reduce motion. */
+export function useReducedMotionFlag() {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const m = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduced(m.matches);
+    const fn = () => setReduced(m.matches);
+    m.addEventListener("change", fn);
+    return () => m.removeEventListener("change", fn);
+  }, []);
+  return reduced;
+}
+
 /** 1. Reveal — fade plus optional slide, fires once when scrolled into view. */
 export function Reveal({
   children,
@@ -53,6 +66,10 @@ export function Reveal({
   delay?: number;
   className?: string;
 }) {
+  // A visitor who turned motion off should never have to scroll an element into
+  // view before it is allowed to exist. Same for crawlers and screenshot tools.
+  const reduced = useReducedMotionFlag();
+  if (reduced) return <div className={className}>{children}</div>;
   return (
     <motion.div
       className={className}
@@ -83,6 +100,8 @@ export function Stagger({
   children: ReactNode;
   className?: string;
 }) {
+  const reduced = useReducedMotionFlag();
+  if (reduced) return <div className={className}>{children}</div>;
   return (
     <motion.div
       className={className}
@@ -103,6 +122,8 @@ export function StaggerItem({
   children: ReactNode;
   className?: string;
 }) {
+  const reduced = useReducedMotionFlag();
+  if (reduced) return <div className={className}>{children}</div>;
   return (
     <motion.div className={className} variants={staggerChild}>
       {children}
@@ -121,6 +142,13 @@ export function SplitText({
   delay?: number;
 }) {
   const words = text.split(" ");
+  const reduced = useReducedMotionFlag();
+  if (reduced)
+    return (
+      <span className={className} aria-label={text}>
+        {text}
+      </span>
+    );
   return (
     <motion.span
       className={className}
@@ -161,16 +189,21 @@ export function TypewriterText({
   className?: string;
   speed?: number;
 }) {
+  const reduced = useReducedMotionFlag();
   const [n, setN] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true });
 
   useEffect(() => {
+    if (reduced) {
+      setN(text.length);
+      return;
+    }
     if (!inView) return;
     if (n >= text.length) return;
     const t = setTimeout(() => setN((v) => v + 1), speed);
     return () => clearTimeout(t);
-  }, [inView, n, text.length, speed]);
+  }, [reduced, inView, n, text.length, speed]);
 
   return (
     <span ref={ref} className={cn("font-mono", className)}>
@@ -328,13 +361,14 @@ export function CounterUp({
 }) {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, margin: "-40px" });
+  const reduced = useReducedMotionFlag();
   // The real figure is the default, so screenshots, crawlers and visitors who
   // turned motion off never read a false "0". The count-up only replays it.
   const [val, setVal] = useState(to);
 
   useEffect(() => {
     if (!inView) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (reduced) {
       setVal(to);
       return;
     }
@@ -344,7 +378,7 @@ export function CounterUp({
       onUpdate: (v) => setVal(v),
     });
     return () => controls.stop();
-  }, [inView, to]);
+  }, [reduced, inView, to]);
 
   return (
     <span ref={ref} className={className}>
@@ -559,6 +593,7 @@ export function ProgressRing({
   progress?: number;
   size?: number;
 }) {
+  const reduced = useReducedMotionFlag();
   const r = size / 2 - 6;
   const c = 2 * Math.PI * r;
   return (
@@ -580,7 +615,7 @@ export function ProgressRing({
         strokeWidth="5"
         strokeLinecap="round"
         strokeDasharray={c}
-        initial={{ strokeDashoffset: c }}
+        initial={{ strokeDashoffset: reduced ? c * (1 - progress) : c }}
         whileInView={{ strokeDashoffset: c * (1 - progress) }}
         viewport={{ once: true }}
         transition={{ duration: 1.2, ease: EASE }}
@@ -618,19 +653,6 @@ export function GradientMesh() {
       />
     </div>
   );
-}
-
-/** Reports whether the visitor asked the system to reduce motion. */
-export function useReducedMotionFlag() {
-  const [reduced, setReduced] = useState(false);
-  useEffect(() => {
-    const m = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduced(m.matches);
-    const fn = () => setReduced(m.matches);
-    m.addEventListener("change", fn);
-    return () => m.removeEventListener("change", fn);
-  }, []);
-  return reduced;
 }
 
 export { useMotionValueEvent };
