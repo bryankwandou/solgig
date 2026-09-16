@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { MotionConfig } from "framer-motion";
 import { en, id, type Copy } from "@/content/copy";
 import { cn } from "@/lib/utils";
 
@@ -64,7 +65,8 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
 
   return (
     <LocaleCtx.Provider value={{ locale, setLocale }}>
-      {children}
+      {/* Visitors who turned motion off get fades without movement, site-wide. */}
+      <MotionConfig reducedMotion="user">{children}</MotionConfig>
     </LocaleCtx.Provider>
   );
 }
