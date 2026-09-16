@@ -128,9 +128,13 @@ export async function POST(
         UPDATE services SET total_orders = total_orders + 1 WHERE id = ${order.service_id}
       `;
     }
+    // Credit the net, as confirm does for products: the platform fee went to
+    // the treasury (escrow release and direct payment both split it off).
+    const net =
+      Number(order.amount_lamports) - Number(order.platform_fee_lamports);
     await sql`
       UPDATE users
-      SET total_earned_lamports = total_earned_lamports + ${order.amount_lamports},
+      SET total_earned_lamports = total_earned_lamports + ${net},
           completed_orders = completed_orders + 1
       WHERE id = ${order.seller_id}
     `;

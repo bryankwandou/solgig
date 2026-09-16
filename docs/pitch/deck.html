@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SolGig Pitch Deck</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07070c;
+    --panel: #11111a;
+    --line: #23233a;
+    --text: #f2f2f7;
+    --muted: #9a9ab0;
+    --purple: #9945ff;
+    --green: #14f195;
+    --cyan: #00c2ff;
+  }
+  @page { size: 1280px 720px; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--text); font-family: Inter, system-ui, sans-serif; }
+  .slide {
+    width: 1280px; height: 720px; padding: 72px 88px;
+    position: relative; overflow: hidden;
+    page-break-after: always; break-after: page;
+    display: flex; flex-direction: column;
+    background:
+      radial-gradient(600px 400px at 100% 0%, rgba(153,69,255,.16), transparent 70%),
+      radial-gradient(500px 360px at 0% 100%, rgba(20,241,149,.08), transparent 70%),
+      var(--bg);
+  }
+  .slide:last-child { page-break-after: auto; break-after: auto; }
+  .kicker { font: 500 14px/1 "JetBrains Mono", monospace; letter-spacing: .14em; text-transform: uppercase; color: var(--green); margin-bottom: 22px; }
+  h1 { font: 700 84px/1 "Space Grotesk", sans-serif; letter-spacing: -.03em; }
+  h2 { font: 700 50px/1.08 "Space Grotesk", sans-serif; letter-spacing: -.02em; max-width: 1000px; }
+  p.lead { font-size: 24px; line-height: 1.45; color: var(--muted); max-width: 860px; margin-top: 26px; }
+  .grad { background: linear-gradient(90deg, var(--purple), var(--cyan) 55%, var(--green)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .foot { position: absolute; left: 88px; right: 88px; bottom: 36px; display: flex; justify-content: space-between; font: 500 13px "JetBrains Mono", monospace; color: #5d5d75; }
+  .grid { display: grid; gap: 20px; margin-top: 44px; }
+  .g3 { grid-template-columns: repeat(3, 1fr); }
+  .g2 { grid-template-columns: repeat(2, 1fr); }
+  .g4 { grid-template-columns: repeat(4, 1fr); }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 28px; }
+  .card h3 { font: 700 23px/1.2 "Space Grotesk", sans-serif; margin-bottom: 10px; }
+  .card p { font-size: 17px; line-height: 1.5; color: var(--muted); }
+  .num { font: 700 54px/1 "Space Grotesk", sans-serif; margin-bottom: 8px; }
+  .mono { font-family: "JetBrains Mono", monospace; }
+  .flow { display: flex; align-items: stretch; gap: 14px; margin-top: 48px; }
+  .flow .card { flex: 1; }
+  .arrow { align-self: center; color: var(--purple); font-size: 28px; }
+  .step { font: 500 13px "JetBrains Mono", monospace; color: var(--cyan); margin-bottom: 12px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 36px; font-size: 18px; }
+  th, td { text-align: left; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 500; font-size: 15px; }
+  td.y { color: var(--green); font-weight: 600; }
+  td.n { color: #5d5d75; }
+  .mark { width: 76px; height: 76px; margin-bottom: 34px; }
+  code.sig { font: 500 14px "JetBrains Mono", monospace; color: var(--cyan); word-break: break-all; }
+  ul.plain { list-style: none; margin-top: 30px; }
+  ul.plain li { font-size: 22px; line-height: 1.5; padding: 12px 0; border-bottom: 1px solid var(--line); color: var(--muted); }
+  ul.plain li b { color: var(--text); font-weight: 600; }
+  @media screen {
+    body { display: flex; flex-direction: column; align-items: center; gap: 24px; padding: 24px 0; }
+    .slide { border-radius: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<section class="slide" style="justify-content:center">
+  <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
+    <defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#9945ff"/><stop offset="1" stop-color="#14f195"/></linearGradient></defs>
+    <rect x="8" y="10" width="44" height="9" rx="2" fill="url(#g)" transform="skewX(-18)"/>
+    <path d="M14 29 l8 4 -8 4" stroke="#00c2ff" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="28" y="30" width="22" height="5" rx="2" fill="#00c2ff"/>
+    <rect x="16" y="45" width="44" height="9" rx="2" fill="url(#g)" transform="skewX(-18)"/>
+  </svg>
+  <div class="kicker">Solana devnet · live MVP</div>
+  <h1>Sol<span class="grad">Gig</span></h1>
+  <p class="lead">A marketplace where creators sell files and services for SOL, and where an AI agent can find, buy and receive a product through one endpoint without a person clicking anything.</p>
+  <div class="foot"><span>solgig.vercel.app</span><span>01</span></div>
+</section>
+
+<section class="slide">
+  <div class="kicker">The problem</div>
+  <h2>Selling a small digital thing online still costs too much and pays too slowly.</h2>
+  <div class="grid g3">
+    <div class="card"><div class="num grad">30 %</div><h3>Platform cut</h3><p>App stores and creator platforms routinely keep 10 to 30 percent of each sale.</p></div>
+    <div class="card"><div class="num grad">7–30 d</div><h3>Payout delay</h3><p>Creators wait on payout schedules and minimum balances before they see a cent.</p></div>
+    <div class="card"><div class="num grad">0</div><h3>Agent checkout</h3><p>AI agents can browse the web but cannot pass a card form. No marketplace is built for them to pay.</p></div>
+  </div>
+  <div class="foot"><span>SolGig</span><span>02</span></div>
+</section>
+
+<section class="slide">
+  <div class="kicker">The product</div>
+  <h2>List it, post it, get paid in the same block.</h2>
+  <div class="grid g2">
+    <div class="card"><h3>Digital goods, paid directly</h3><p>The buyer signs one transaction that pays the seller and a 2.5 % fee to the treasury. The server reads it back from the chain before it unlocks the file.</p></div>
+    <div class="card"><h3>Services, held in escrow</h3><p>Service payments sit in an escrow wallet until the buyer confirms delivery, then the server signs the payout to the seller.</p></div>
+    <div class="card"><h3>A feed that sells</h3><p>Posts, comments, likes and follows sit next to the listings, so a creator's audience and their shop are the same page.</p></div>
+    <div class="card"><h3>A catalog agents can use</h3><p><span class="mono">/api/products</span> returns prices and the exact transfers to make. An agent can pay and verify without scraping a page.</p></div>
+  </div>
+  <div class="foot"><span>SolGig</span><span>03</span></div>
+</section>
+
+<section class="slide">
+  <div class="kicker">How a purchase works</div>
+  <h2>Every step can be checked on the chain.</h2>
+  <div class="flow">
+    <div class="card"><div class="step">01 · SIGN IN</div><h3>Wallet signature</h3><p>Sign-In-With-Solana. The nonce is burned on first use.</p></div>
+    <div class="arrow">→</div>
+    <div class="card"><div class="step">02 · ORDER</div><h3>Server quotes</h3><p>The server returns the transfer list. The client does no fee math.</p></div>
+    <div class="arrow">→</div>
+    <div class="card"><div class="step">03 · PAY</div><h3>One transaction</h3><p>Seller share and fee move together, signed by the buyer.</p></div>
+    <div class="arrow">→</div>
+    <div class="card"><div class="step">04 · VERIFY</div><h3>Read it back</h3><p>Signer, destination, balance deltas, and a one-time signature rule.</p></div>
+  </div>
+  <div class="foot"><span>SolGig</span><span>04</span></div>
+</section>
+
+<section class="slide">
+  <div class="kicker">Proof it runs</div>
+  <h2>Three paid orders, finalized on devnet.</h2>
+  <table>
+    <tr><th>Signature</th><th>Amount</th><th>Status</th></tr>
+    <tr><td><code class="sig">4Sp81mdZg2mDGdQQGQP75yeqboKhy2TXmwHPRQ1RruycXHt9vXuGRpRRPNrvHAfCnYHGCYnEvSspU5cyK8GNcbFh</code></td><td>0.4 SOL</td><td class="y">finalized</td></tr>
+    <tr><td><code class="sig">2VzLTr6m6hsY96HLvG8mqWdyZQbSXDZnn5y2gg3d5ffKSAXXSXxLGaGc81UsfxjA5kkJWLCAJwMLeKZbugaLiBCm</code></td><td>0.4 SOL</td><td class="y">finalized</td></tr>
+    <tr><td><code class="sig">3DbD4FrZJ1QVR9ukXMejphuemBHcvK5rYjQvEsLhJxHJEz9Qw5TstSjxSVEJHTbZh6qvojauT9zdR9rgwkjU1d2E</code></td><td>0.4 SOL</td><td class="y">finalized</td></tr>
+  </table>
+  <p class="lead" style="font-size:19px">Checked with <span class="mono">getSignatureStatuses</span> against api.devnet.solana.com on 16 September 2026. Each one is viewable at explorer.solana.com with <span class="mono">?cluster=devnet</span>.</p>
+  <div class="foot"><span>SolGig</span><span>05</span></div>
+</section>
+
+<section class="slide">
+  <div class="kicker">Where it stands</div>
+  <h2>Compared with what people use today.</h2>
+  <table>
+    <tr><th></th><th>Gumroad</th><th>Fiverr</th><th>Crypto pay links</th><th>SolGig</th></tr>
+    <tr><td>Fee on a sale</td><td>10 %</td><td>20 % + buyer fee</td><td>~1 %</td><td class="y">2.5 %</td></tr>
+    <tr><td>Seller paid</td><td>Weekly</td><td>After clearance</td><td>Instant</td><td class="y">Same transaction</td></tr>
+    <tr><td>Escrow for services</td><td class="n">No</td><td>Yes</td><td class="n">No</td><td class="y">Yes, on-chain payout</td></tr>
+    <tr><td>Social feed</td><td class="n">No</td><td class="n">No</td><td class="n">No</td><td class="y">Yes</td></tr>
+    <tr><td>Built for agent buyers</td><td class="n">No</td><td class="n">No</td><td class="n">Partly</td><td class="y">Yes</td></tr>
+  </table>
+  <div class="foot"><span>SolGig</span><span>06</span></div>
+</section>
+
+<section class="slide">
+  <div class="kicker">Business model</div>
+  <h2>A flat fee on every sale, taken inside the payment.</h2>
+  <div class="grid g3">
+    <div class="card"><div class="num grad">2.5 %</div><h3>Take rate</h3><p>Set in basis points and applied by the server, so the fee cannot be edited on the client.</p></div>
+    <div class="card"><div class="num grad">$0</div><h3>Collection cost</h3><p>The fee lands in the treasury in the same transaction. There is no invoicing and no card processor.</p></div>
+    <div class="card"><div class="num grad">Next</div><h3>Promoted listings</h3><p>Paid placement in the feed and the agent catalog, priced in SOL.</p></div>
+  </div>
+  <div class="foot"><span>SolGig</span><span>07</span></div>
+</section>
+
+<section class="slide">
+  <div class="kicker">Built so far</div>
+  <h2>What exists today, not what is planned.</h2>
+  <div class="grid g4">
+    <div class="card"><div class="num grad">21</div><p>API routes</p></div>
+    <div class="card"><div class="num grad">10</div><p>Pages, English and Indonesian</p></div>
+    <div class="card"><div class="num grad">20</div><p>Motion components plus a Three.js coin orbit</p></div>
+    <div class="card"><div class="num grad">3</div><p>Recorded audit rounds with fixes</p></div>
+  </div>
+  <ul class="plain">
+    <li><b>Stack.</b> Next.js 15, React 19, TypeScript, Neon Postgres, @solana/web3.js, wallet adapter.</li>
+    <li><b>Safety.</b> Replay guard on signatures, payout lock against double release, per-route rate limits, a boot check that stops devnet and mainnet settings from mixing.</li>
+  </ul>
+  <div class="foot"><span>SolGig</span><span>08</span></div>
+</section>
+
+<section class="slide">
+  <div class="kicker">Next 90 days</div>
+  <h2>From a working MVP to a program-owned escrow.</h2>
+  <ul class="plain">
+    <li><b>Month 1.</b> Move escrow from a server wallet to an Anchor program so no one at SolGig can hold funds.</li>
+    <li><b>Month 2.</b> USDC pricing next to SOL, and an SDK so agent frameworks can buy in a few lines.</li>
+    <li><b>Month 3.</b> Mainnet launch with twenty invited creators, and promoted listings turned on.</li>
+  </ul>
+  <div class="foot"><span>SolGig</span><span>09</span></div>
+</section>
+
+<section class="slide" style="justify-content:center">
+  <div class="kicker">Try it</div>
+  <h1 style="font-size:72px">Pay a creator in<br><span class="grad">one signature.</span></h1>
+  <p class="lead">solgig.vercel.app &nbsp;·&nbsp; walkthrough video in docs/video &nbsp;·&nbsp; full report in docs/LAPORAN.md</p>
+  <div class="foot"><span>SolGig</span><span>10</span></div>
+</section>
+
+</body>
+</html>
