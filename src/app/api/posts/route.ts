@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { sql } from "@/lib/db";
+import { isHttpUrl } from "@/lib/utils";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { rateLimit } from "@/lib/rate-limit";
 
@@ -35,7 +36,7 @@ export async function GET(req: NextRequest) {
 
 const CreatePost = z.object({
   content: z.string().min(1).max(1000),
-  media_url: z.string().url().optional().or(z.literal("")),
+  media_url: z.string().url().refine(isHttpUrl).optional().or(z.literal("")),
   linked_product_id: z.string().uuid().optional(),
   tags: z.array(z.string()).max(8).default([]),
 });

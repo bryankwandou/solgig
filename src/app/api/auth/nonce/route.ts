@@ -25,10 +25,12 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
-  // One live nonce per wallet keeps the table from being spammed full.
+  // Only expired nonces are swept. Deleting a wallet's live nonces here let
+  // anyone who knew an address void that wallet's pending sign-in by
+  // requesting a fresh nonce for it every few seconds. Table growth stays
+  // bounded by the per-IP limit above and the five-minute expiry.
   await sql`
-    DELETE FROM auth_nonces
-    WHERE wallet_address = ${wallet} OR expires_at < NOW()
+    DELETE FROM auth_nonces WHERE expires_at < NOW()
   `;
   const nonce = randomNonce();
   const issuedAt = new Date().toISOString();

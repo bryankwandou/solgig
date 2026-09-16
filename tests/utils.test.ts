@@ -50,3 +50,17 @@ describe("shortAddress", () => {
     expect(out.endsWith("gAsU")).toBe(true);
   });
 });
+
+import { isHttpUrl } from "../src/lib/utils";
+
+describe("isHttpUrl", () => {
+  it("accepts http and https links", () => {
+    expect(isHttpUrl("https://example.com/file.zip")).toBe(true);
+    expect(isHttpUrl("http://example.com")).toBe(true);
+  });
+  it("rejects script and data schemes that z.string().url() lets through", () => {
+    expect(isHttpUrl("javascript:alert(document.cookie)")).toBe(false);
+    expect(isHttpUrl("data:text/html,<script>alert(1)</script>")).toBe(false);
+    expect(isHttpUrl("not a url")).toBe(false);
+  });
+});

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { sql } from "@/lib/db";
+import { isHttpUrl } from "@/lib/utils";
 import { getCurrentUser } from "@/lib/auth/current-user";
 
 export const runtime = "nodejs";
@@ -20,7 +21,7 @@ const UpdateProfile = z.object({
   username: z.string().min(3).max(24).regex(/^[a-z0-9_.]+$/).optional(),
   display_name: z.string().max(60).optional(),
   bio: z.string().max(300).optional(),
-  avatar_url: z.string().url().optional().or(z.literal("")),
+  avatar_url: z.string().url().refine(isHttpUrl).optional().or(z.literal("")),
   skills: z.array(z.string()).max(12).optional(),
 });
 
