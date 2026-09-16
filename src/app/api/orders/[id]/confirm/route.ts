@@ -134,9 +134,12 @@ export async function POST(
     await sql`
       UPDATE products SET total_purchases = total_purchases + 1 WHERE id = ${order.product_id}
     `;
+    // The seller is credited what actually reached them. The platform fee
+    // went to the treasury, so counting the gross here would overstate every
+    // seller's lifetime earnings by the fee on every sale.
     await sql`
       UPDATE users
-      SET total_earned_lamports = total_earned_lamports + ${order.amount_lamports},
+      SET total_earned_lamports = total_earned_lamports + ${amount - platformFee},
           completed_orders = completed_orders + 1
       WHERE id = ${order.seller_id}
     `;
