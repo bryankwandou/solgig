@@ -1,57 +1,10 @@
-import {
-  Connection,
-  PublicKey,
-  Transaction,
-  SystemProgram,
-} from "@solana/web3.js";
+import { Connection } from "@solana/web3.js";
 
 export const RPC_URL =
   process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? "https://api.devnet.solana.com";
 
 export function getConnection() {
   return new Connection(RPC_URL, "confirmed");
-}
-
-/**
- * Build an unsigned transfer transaction. When a platform treasury is set,
- * the fee is split off to it and the rest goes to the seller, in one tx.
- */
-export async function buildPaymentTransaction(params: {
-  buyer: string;
-  seller: string;
-  amountLamports: number;
-  treasury?: string;
-  feeLamports?: number;
-}): Promise<Transaction> {
-  const connection = getConnection();
-  const buyer = new PublicKey(params.buyer);
-  const seller = new PublicKey(params.seller);
-
-  const tx = new Transaction();
-  const fee = params.treasury ? (params.feeLamports ?? 0) : 0;
-  const sellerCut = params.amountLamports - fee;
-
-  tx.add(
-    SystemProgram.transfer({
-      fromPubkey: buyer,
-      toPubkey: seller,
-      lamports: sellerCut,
-    }),
-  );
-  if (params.treasury && fee > 0) {
-    tx.add(
-      SystemProgram.transfer({
-        fromPubkey: buyer,
-        toPubkey: new PublicKey(params.treasury),
-        lamports: fee,
-      }),
-    );
-  }
-
-  tx.feePayer = buyer;
-  const { blockhash } = await connection.getLatestBlockhash("confirmed");
-  tx.recentBlockhash = blockhash;
-  return tx;
 }
 
 /**
