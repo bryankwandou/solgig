@@ -38,3 +38,17 @@ export function formatSol(lamports: number) {
   const sol = lamports / LAMPORTS_PER_SOL;
   return `${parseFloat(sol.toFixed(4))} SOL`;
 }
+
+/**
+ * True only for absolute http(s) URLs. `z.string().url()` also accepts
+ * `javascript:` and `data:`, which become script when a stored link is
+ * opened with window.open or rendered into an href.
+ */
+export function isHttpUrl(value: string) {
+  try {
+    const { protocol } = new URL(value);
+    return protocol === "https:" || protocol === "http:";
+  } catch {
+    return false;
+  }
+}

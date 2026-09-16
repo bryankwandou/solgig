@@ -26,7 +26,7 @@ const PORT = Number(args.port ?? 9333);
 
 const EDGE =
   process.env.EDGE_PATH ??
-  "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe";
+  "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe";
 
 const VIEWS = {
   desktop: { width: 1440, height: 900, scale: 1, mobile: false },
