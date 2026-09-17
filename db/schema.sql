@@ -217,3 +217,13 @@ CREATE TABLE IF NOT EXISTS rate_limits (
   PRIMARY KEY (bucket, window_start)
 );
 CREATE INDEX IF NOT EXISTS idx_rate_limits_window ON rate_limits(window_start);
+
+-- =========================================
+-- ROUND 4: on-chain settlement through the escrow program
+-- =========================================
+-- How an order's money moves: 'transfer' (buyer pays seller and treasury
+-- directly), 'custodial' (platform escrow wallet), or 'program' (the
+-- solgig-escrow program: receipts for goods, program-owned escrow for
+-- services).
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS settlement TEXT NOT NULL DEFAULT 'transfer';
+UPDATE orders SET settlement = 'custodial' WHERE escrow = true AND settlement = 'transfer';

@@ -9,7 +9,10 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "program:build": "node scripts/program-build.mjs",
+    "program:test": "cd programs/solgig-escrow/test-suite && cargo test",
+    "escrow": "node scripts/escrow-admin.mts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

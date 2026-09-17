@@ -498,14 +498,30 @@ export function Spotlight({
 }
 
 /** 15. LikeBurst — a heart that pops and scatters on tap. */
-export function LikeBurst({ className }: { className?: string }) {
-  const [on, setOn] = useState(false);
+export function LikeBurst({
+  className,
+  on: controlled,
+  onToggle,
+  disabled,
+  label = "Like",
+}: {
+  className?: string;
+  /** Pass to drive the heart from real state; omit for a self-contained demo. */
+  on?: boolean;
+  onToggle?: () => void;
+  disabled?: boolean;
+  label?: string;
+}) {
+  const [local, setLocal] = useState(false);
+  const on = controlled ?? local;
   return (
     <button
-      onClick={() => setOn((v) => !v)}
-      className={cn("relative h-9 w-9", className)}
+      type="button"
+      onClick={() => (onToggle ? onToggle() : setLocal((v) => !v))}
+      disabled={disabled}
+      className={cn("relative h-9 w-9 disabled:cursor-not-allowed", className)}
       aria-pressed={on}
-      aria-label="Like"
+      aria-label={label}
     >
       <motion.span
         animate={on ? { scale: [1, 1.4, 1] } : { scale: 1 }}

@@ -186,7 +186,7 @@ export const en = {
       {
         title: "Networks",
         links: [
-          { label: "Devnet demo", href: "https://solgig.vercel.app" },
+          { label: "Devnet", href: "https://solgig.vercel.app" },
           { label: "Mainnet", href: "https://solgig-mainnet.vercel.app" },
         ],
       },
@@ -203,7 +203,7 @@ export const en = {
       { href: "/dashboard", label: "Dashboard" },
     ],
     mainnetBanner: "Mainnet — real SOL, real payments. Transactions cannot be reversed.",
-    devnetBanner: "Devnet demo — test SOL only, no real money changes hands.",
+    devnetBanner: "Live on Solana devnet. Every payment settles on-chain in devnet SOL.",
     signingIn: "Signing in…",
     signOut: "Sign out",
     connectedAs: "Connected as",
@@ -570,7 +570,7 @@ export const id: Copy = {
       {
         title: "Jaringan",
         links: [
-          { label: "Demo devnet", href: "https://solgig.vercel.app" },
+          { label: "Devnet", href: "https://solgig.vercel.app" },
           { label: "Mainnet", href: "https://solgig-mainnet.vercel.app" },
         ],
       },
@@ -587,7 +587,7 @@ export const id: Copy = {
       { href: "/dashboard", label: "Dasbor" },
     ],
     mainnetBanner: "Mainnet: SOL asli, pembayaran asli. Transaksi tidak bisa dibatalkan.",
-    devnetBanner: "Demo devnet: hanya SOL uji coba, tidak ada uang sungguhan yang berpindah.",
+    devnetBanner: "Aktif di Solana devnet. Setiap pembayaran diselesaikan on-chain dengan SOL devnet.",
     signingIn: "Sedang masuk…",
     signOut: "Keluar",
     connectedAs: "Terhubung sebagai",

@@ -53,31 +53,15 @@ export function checkPayment(
     return { ok: false, reason: "tx_predates_order" };
   }
 
-  const message = tx.transaction.message;
-  // A v0 transaction can pull the seller or treasury in through an address
-  // lookup table. The balance arrays cover static keys followed by the
-  // loaded ones, so resolve through both or a valid payment is refused.
-  // Signers are always static, so the signer check below is unaffected.
-  const loaded = tx.meta?.loadedAddresses;
-  const usesLookups =
-    "addressTableLookups" in message && message.addressTableLookups.length > 0;
-  if (usesLookups && !loaded) {
-    return { ok: false, reason: "lookups_unresolved" };
-  }
-  const accountKeys = usesLookups
-    ? message.getAccountKeys({ accountKeysFromLookups: loaded })
-    : message.getAccountKeys();
-  const keys: string[] = [];
-  for (let i = 0; i < accountKeys.length; i++) {
-    keys.push(accountKeys.get(i)!.toBase58());
-  }
+  const resolved = resolveKeys(tx);
+  if ("error" in resolved) return { ok: false, reason: resolved.error };
+  const { keys, numSigners } = resolved;
   const sellerIdx = keys.indexOf(params.seller);
   const buyerIdx = keys.indexOf(params.buyer);
   if (sellerIdx < 0 || buyerIdx < 0) {
     return { ok: false, reason: "party_missing" };
   }
   // The buyer must have signed this transaction, not merely appear in it.
-  const numSigners = message.header.numRequiredSignatures;
   if (buyerIdx >= numSigners) {
     return { ok: false, reason: "buyer_not_signer" };
   }
@@ -111,3 +95,31 @@ export function checkPayment(
   }
   return { ok: true };
 }
+
+/**
+ * Every account key of a fetched transaction as base58, in balance-array
+ * order, plus how many of the leading keys signed.
+ */
+export function resolveKeys(
+  tx: FetchedTx,
+): { keys: string[]; numSigners: number } | { error: string } {
+  const message = tx.transaction.message;
+  // A v0 transaction can pull the seller or treasury in through an address
+  // lookup table. The balance arrays cover static keys followed by the
+  // loaded ones, so resolve through both or a valid payment is refused.
+  // Signers are always static, so signer checks are unaffected.
+  const loaded = tx.meta?.loadedAddresses;
+  const usesLookups =
+    "addressTableLookups" in message && message.addressTableLookups.length > 0;
+  if (usesLookups && !loaded) return { error: "lookups_unresolved" };
+  const accountKeys = usesLookups
+    ? message.getAccountKeys({ accountKeysFromLookups: loaded })
+    : message.getAccountKeys();
+  const keys: string[] = [];
+  for (let i = 0; i < accountKeys.length; i++) {
+    keys.push(accountKeys.get(i)!.toBase58());
+  }
+  return { keys, numSigners: message.header.numRequiredSignatures };
+}
+
+export type { FetchedTx };
