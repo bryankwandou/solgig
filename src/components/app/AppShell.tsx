@@ -33,7 +33,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         style={
           IS_MAINNET
             ? { background: "var(--brand-violet)", color: "#fff" }
-            : { background: "var(--warn)", color: "var(--bg)" }
+            : { background: "var(--warn)", color: "var(--on-brand)" }
         }
       >
         {IS_MAINNET ? copy.app.mainnetBanner : copy.app.devnetBanner}
@@ -81,7 +81,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <WalletMultiButton
               style={{
                 background: "var(--brand-grad)",
-                color: "#000",
+                color: "var(--on-brand)",
                 height: 38,
                 borderRadius: 999,
                 fontSize: 14,

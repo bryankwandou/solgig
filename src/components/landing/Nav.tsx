@@ -21,7 +21,7 @@ export function Nav() {
 
   return (
     <header
-      className="fixed inset-x-0 top-0 z-40 transition-all duration-300"
+      className="fixed inset-x-0 top-0 z-40 transition-[background-color,border-color,backdrop-filter] duration-300"
       style={{
         backgroundColor: scrolled
           ? "color-mix(in oklch, var(--bg) 72%, transparent)"
