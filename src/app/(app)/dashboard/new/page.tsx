@@ -88,7 +88,7 @@ export default function NewListingPage() {
             onClick={() => setKind(k)}
             aria-pressed={kind === k}
             className="rounded-full border px-4 py-2 text-sm"
-            style={kind === k ? { background: "var(--brand-grad)", color: "#000" } : undefined}
+            style={kind === k ? { background: "var(--brand-grad)", color: "var(--on-brand)" } : undefined}
           >
             {t.kinds[k]}
           </button>
