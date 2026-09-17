@@ -63,7 +63,7 @@ export default function ServicesPage() {
                   />
                 ) : (
                   <div
-                    className="mb-4 grid h-32 place-items-center rounded-[var(--radius-sm)] text-2xl font-bold text-black"
+                    className="mb-4 grid h-32 place-items-center rounded-[var(--radius-sm)] text-2xl font-bold text-[var(--on-brand)]"
                     style={{ background: "var(--brand-grad)" }}
                   >
                     {s.title.slice(0, 1).toUpperCase()}
@@ -170,7 +170,7 @@ function BookButton({ service }: { service: Service }) {
         disabled={
           isOwn || !user || ["creating", "paying", "confirming"].includes(state.step)
         }
-        className="w-full rounded-full px-4 py-2 text-sm font-semibold text-black disabled:opacity-40"
+        className="w-full rounded-full px-4 py-2 text-sm font-semibold text-[var(--on-brand)] disabled:opacity-40"
         style={{ background: "var(--brand-grad)" }}
       >
         {isOwn

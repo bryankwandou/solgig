@@ -53,7 +53,7 @@ export default function AnimationGallery() {
     { id: "02", ...d(1), node: <Stagger key={replay} className="flex gap-2">{[0,1,2,3].map(i=><StaggerItem key={i}><Pill>{i+1}</Pill></StaggerItem>)}</Stagger> },
     { id: "03", ...d(2), node: <span key={replay} className="font-display text-xl font-bold"><SplitText key={t.title} text={label(2)} /></span> },
     { id: "04", ...d(3), node: <TypewriterText key={replay} text="solgig.xyz" className="text-lg" /> },
-    { id: "05", ...d(4), node: <MagneticButton background="var(--brand-grad)" className="rounded-full px-5 py-2.5 text-sm font-semibold text-black">{label(4)}</MagneticButton> },
+    { id: "05", ...d(4), node: <MagneticButton background="var(--brand-grad)" className="rounded-full px-5 py-2.5 text-sm font-semibold text-[var(--on-brand)]">{label(4)}</MagneticButton> },
     { id: "06", ...d(5), node: <HoverTilt><div className="grid h-24 w-36 place-items-center rounded-[var(--radius-md)] border" style={{background:"var(--surface-2)"}}><LogoMark size={36}/></div></HoverTilt> },
     { id: "07", ...d(6), node: <GlowCard className="grid h-24 w-40 place-items-center"><span className="text-sm text-[var(--text-mut)]">{label(6)}</span></GlowCard> },
     { id: "08", ...d(7), node: <span className="font-display text-3xl font-bold text-grad"><CounterUp key={replay} to={4820} suffix=" SOL" /></span> },
@@ -90,7 +90,7 @@ export default function AnimationGallery() {
           </button>
           <a
             href="/"
-            className="rounded-full px-4 py-2 text-sm font-medium text-black"
+            className="rounded-full px-4 py-2 text-sm font-medium text-[var(--on-brand)]"
             style={{ background: "var(--brand-grad)" }}
           >
             {t.back}

@@ -312,7 +312,7 @@ function FeedCard({
     <article className="rounded-[var(--radius-md)] border p-5" style={{ background: "var(--surface)" }}>
       <div className="flex items-center gap-3">
         <div
-          className="grid h-10 w-10 place-items-center rounded-full font-display text-sm font-bold text-black"
+          className="grid h-10 w-10 place-items-center rounded-full font-display text-sm font-bold text-[var(--on-brand)]"
           style={{ background: "var(--brand-grad)" }}
         >
           {post.author.slice(0, 1).toUpperCase()}
@@ -333,7 +333,7 @@ function FeedCard({
         </div>
         <Link
           href="/marketplace"
-          className="rounded-full px-4 py-2 text-sm font-medium text-black"
+          className="rounded-full px-4 py-2 text-sm font-medium text-[var(--on-brand)]"
           style={{ background: "var(--brand-grad)" }}
         >
           {copy.landing.buy} · {post.price}
@@ -372,7 +372,7 @@ export function FinalCta() {
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link
               href="/dashboard/new"
-              className="rounded-full px-6 py-3 text-sm font-semibold text-black"
+              className="rounded-full px-6 py-3 text-sm font-semibold text-[var(--on-brand)]"
               style={{ background: "var(--brand-grad)" }}
             >
               {copy.finalCta.primary}

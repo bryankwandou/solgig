@@ -79,7 +79,7 @@ export default function MarketplacePage() {
                     />
                   ) : (
                     <div
-                      className="mb-4 grid h-32 place-items-center rounded-[var(--radius-sm)] text-2xl font-bold text-black"
+                      className="mb-4 grid h-32 place-items-center rounded-[var(--radius-sm)] text-2xl font-bold text-[var(--on-brand)]"
                       style={{ background: "var(--brand-grad)" }}
                     >
                       {p.title.slice(0, 1).toUpperCase()}

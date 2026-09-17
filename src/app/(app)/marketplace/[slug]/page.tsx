@@ -7,6 +7,7 @@ import { buildPaymentTx } from "@/lib/solana/paymentTx";
 import { useAuth } from "@/lib/auth/useAuth";
 import { formatSol, shortAddress } from "@/lib/utils";
 import { ProgressRing } from "@/components/motion";
+import Link from "next/link";
 import { useCopy } from "@/lib/i18n";
 
 type Product = {
@@ -25,6 +26,13 @@ type Product = {
   seller_name: string | null;
   seller_wallet: string;
   seller_reputation: number;
+};
+type Related = {
+  slug: string;
+  title: string;
+  thumbnail_url: string | null;
+  price_lamports: number;
+  seller_wallet: string;
 };
 type Review = {
   rating: number;
@@ -78,7 +86,7 @@ export default function ProductPage() {
           />
         ) : (
           <div
-            className="grid h-56 place-items-center rounded-[var(--radius-lg)] text-5xl font-bold text-black"
+            className="grid h-56 place-items-center rounded-[var(--radius-lg)] text-5xl font-bold text-[var(--on-brand)]"
             style={{ background: "var(--brand-grad)" }}
           >
             {product.title.slice(0, 1).toUpperCase()}
@@ -127,7 +135,57 @@ export default function ProductPage() {
       <div className="lg:sticky lg:top-24 lg:self-start">
         <BuyPanel product={product} />
       </div>
+
+      <RelatedListings product={product} />
     </div>
+  );
+}
+
+// Fills the space under the fold: same-seller listings first, then others.
+function RelatedListings({ product }: { product: Product }) {
+  const t = useCopy().pages;
+  const [items, setItems] = useState<Related[]>([]);
+
+  useEffect(() => {
+    fetch("/api/products")
+      .then((r) => r.json())
+      .then((d: { items?: Related[] }) => setItems((d.items ?? []).filter((p) => p.slug !== product.slug)))
+      .catch(() => setItems([]));
+  }, [product.slug]);
+
+  const same = items.filter((p) => p.seller_wallet === product.seller_wallet);
+  const list = (same.length ? same : items).slice(0, 3);
+  if (!list.length) return null;
+
+  return (
+    <section className="lg:col-span-2">
+      <h2 className="font-display text-lg font-semibold">
+        {same.length ? t.product.moreFrom : t.product.moreOn}
+      </h2>
+      <div className="mt-4 grid gap-4 sm:grid-cols-3">
+        {list.map((p) => (
+          <Link
+            key={p.slug}
+            href={`/marketplace/${p.slug}`}
+            className="group rounded-[var(--radius-md)] border p-3 transition-colors hover:border-[var(--brand-mint)]"
+            style={{ background: "var(--surface)" }}
+          >
+            {p.thumbnail_url ? (
+              <img src={p.thumbnail_url} alt="" className="h-28 w-full rounded-[var(--radius-sm)] object-cover" />
+            ) : (
+              <div
+                className="grid h-28 place-items-center rounded-[var(--radius-sm)] text-2xl font-bold text-[var(--on-brand)]"
+                style={{ background: "var(--brand-grad)" }}
+              >
+                {p.title.slice(0, 1).toUpperCase()}
+              </div>
+            )}
+            <div className="mt-3 line-clamp-1 text-sm font-medium">{p.title}</div>
+            <div className="mt-1 text-sm text-[var(--text-mut)]">{formatSol(p.price_lamports)}</div>
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -289,7 +347,7 @@ function Success({
           href={fileUrl}
           target="_blank"
           rel="noreferrer"
-          className="mt-3 block rounded-full px-5 py-3 text-center text-sm font-semibold text-black"
+          className="mt-3 block rounded-full px-5 py-3 text-center text-sm font-semibold text-[var(--on-brand)]"
           style={{ background: "var(--brand-grad)" }}
         >
           {t.product.download}

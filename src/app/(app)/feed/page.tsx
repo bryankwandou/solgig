@@ -95,7 +95,7 @@ export default function FeedPage() {
             <button
               onClick={publish}
               disabled={posting || !text.trim()}
-              className="rounded-full px-4 py-2 text-sm font-medium text-black disabled:opacity-40"
+              className="rounded-full px-4 py-2 text-sm font-medium text-[var(--on-brand)] disabled:opacity-40"
               style={{ background: "var(--brand-grad)" }}
             >
               {posting ? t.feed.posting : t.feed.post}
@@ -203,7 +203,7 @@ function PostCard({ post, canLike }: { post: Post; canLike: boolean }) {
           />
         ) : (
           <div
-            className="grid h-9 w-9 place-items-center rounded-full text-sm font-bold text-black"
+            className="grid h-9 w-9 place-items-center rounded-full text-sm font-bold text-[var(--on-brand)]"
             style={{ background: "var(--brand-grad)" }}
           >
             {name.slice(0, 1).toUpperCase()}
@@ -270,7 +270,7 @@ function PostCard({ post, canLike }: { post: Post; canLike: boolean }) {
               <button
                 onClick={sendComment}
                 disabled={sending || !commentText.trim()}
-                className="rounded-full px-4 py-1.5 text-sm font-medium text-black disabled:opacity-40"
+                className="rounded-full px-4 py-1.5 text-sm font-medium text-[var(--on-brand)] disabled:opacity-40"
                 style={{ background: "var(--brand-grad)" }}
               >
                 {t.common.send}

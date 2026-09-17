@@ -132,7 +132,7 @@ export default function NewListingPage() {
         <button
           onClick={submit}
           disabled={busy}
-          className="w-full rounded-full px-5 py-3 text-sm font-semibold text-black disabled:opacity-40"
+          className="w-full rounded-full px-5 py-3 text-sm font-semibold text-[var(--on-brand)] disabled:opacity-40"
           style={{ background: "var(--brand-grad)" }}
         >
           {busy ? t.publishing : t.publish}

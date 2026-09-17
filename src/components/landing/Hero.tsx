@@ -3,8 +3,6 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import {
-  GradientMesh,
-  FloatingOrbs,
   SplitText,
   Reveal,
   MagneticButton,
@@ -23,8 +21,24 @@ export function Hero() {
   const router = useRouter();
   return (
     <section className="relative flex min-h-[100svh] items-center overflow-hidden pt-16">
-      <GradientMesh />
-      <FloatingOrbs />
+      {/* Ledger grid: a ruled sheet that fades out toward the edges. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px)",
+          backgroundSize: "56px 56px",
+          maskImage: "radial-gradient(ellipse 70% 60% at 50% 40%, black 30%, transparent 75%)",
+          WebkitMaskImage: "radial-gradient(ellipse 70% 60% at 50% 40%, black 30%, transparent 75%)",
+          opacity: 0.55,
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-16 h-px"
+        style={{ background: "linear-gradient(90deg, transparent, var(--brand-mint), transparent)", opacity: 0.5 }}
+      />
 
       <div className="relative mx-auto grid w-full max-w-[1200px] grid-cols-1 items-center gap-10 px-5 lg:grid-cols-2">
         <div>
@@ -53,7 +67,7 @@ export function Hero() {
               <MagneticButton
                 onClick={() => router.push("/dashboard/new")}
                 background="var(--brand-grad)"
-                className="rounded-full px-6 py-3 text-sm font-semibold text-black"
+                className="rounded-full px-6 py-3 text-sm font-semibold text-[var(--on-brand)]"
               >
                 {copy.hero.primary}
               </MagneticButton>

@@ -266,6 +266,8 @@ export const en = {
       howWas: "How was it?",
       submitReview: "Submit review",
       thanks: "Thanks for the review.",
+      moreFrom: "More from this seller",
+      moreOn: "Other listings on SolGig",
     },
     services: {
       title: "Services",
@@ -648,6 +650,8 @@ export const id: Copy = {
       howWas: "Bagaimana hasilnya?",
       submitReview: "Kirim ulasan",
       thanks: "Terima kasih atas ulasanmu.",
+      moreFrom: "Produk lain dari penjual ini",
+      moreOn: "Listing lain di SolGig",
     },
     services: {
       title: "Jasa",
