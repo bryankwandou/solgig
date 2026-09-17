@@ -6,6 +6,8 @@ import { lamportsToNumber, orderSplit, treasuryAddress } from "@/lib/fees";
 import { readUuidParam, unauthorized } from "@/lib/http";
 import { verifyPayment } from "@/lib/solana/pay";
 import { getEscrowAddress } from "@/lib/solana/escrow";
+import { escrowProgramId } from "@/lib/solana/program";
+import { verifyProgramPayment } from "@/lib/solana/settle";
 
 export const runtime = "nodejs";
 
@@ -32,7 +34,7 @@ export async function POST(
   const rows = (await sql`
     SELECT id, buyer_id, seller_wallet, buyer_wallet, amount_lamports,
            platform_fee_lamports, product_id, service_id, order_type,
-           seller_id, status, escrow, created_at
+           seller_id, status, escrow, settlement, created_at
     FROM orders WHERE id = ${id}
   `) as {
     created_at: string;
@@ -47,6 +49,7 @@ export async function POST(
     seller_id: string;
     status: string;
     escrow: boolean;
+    settlement: string;
   }[];
   const order = rows[0];
   if (!order || order.buyer_id !== user.id) {
@@ -59,32 +62,56 @@ export async function POST(
     return NextResponse.json({ ok: true, status: order.status });
   }
 
-  // Escrow orders pay the platform escrow wallet in full; direct orders
-  // pay the seller with the fee split off to the treasury.
-  const escrowAddress = order.escrow ? getEscrowAddress() : null;
-  if (order.escrow && !escrowAddress) {
-    return NextResponse.json(
-      { error: { code: "escrow_unavailable", message: "Escrow is not configured on this server." } },
-      { status: 500 },
-    );
-  }
-  const treasury = treasuryAddress();
-  const payTo = escrowAddress ?? order.seller_wallet;
-  // BigInt split from the shared helper; verifyPayment takes plain numbers.
   const split = orderSplit(order);
-  const amount = lamportsToNumber(split.gross);
-  const platformFee = lamportsToNumber(split.fee);
-  const sellerMin = escrowAddress ? amount : lamportsToNumber(split.sellerNet);
-  const check = await verifyPayment({
-    signature: parsed.data.signature,
-    buyer: order.buyer_wallet,
-    seller: payTo,
-    sellerMinLamports: sellerMin,
-    treasury: escrowAddress ? null : treasury,
-    feeLamports: escrowAddress ? 0 : platformFee,
-    // Two minutes of slack for clock drift between the database and the chain.
-    notBefore: Math.floor(new Date(order.created_at).getTime() / 1000) - 120,
-  });
+  // Two minutes of slack for clock drift between the database and the chain.
+  const notBefore = Math.floor(new Date(order.created_at).getTime() / 1000) - 120;
+  let payTo: string;
+  let check: { ok: boolean; reason?: string };
+
+  if (order.settlement === "program") {
+    const program = escrowProgramId();
+    if (!program) {
+      return NextResponse.json(
+        { error: { code: "program_unavailable", message: "The escrow program is not configured on this server." } },
+        { status: 500 },
+      );
+    }
+    const kind = order.order_type === "service" ? "escrow" : "receipt";
+    payTo = program.toBase58();
+    check = await verifyProgramPayment(program, kind, parsed.data.signature, {
+      orderId: id,
+      buyer: order.buyer_wallet,
+      seller: order.seller_wallet,
+      amount: split.gross,
+      fee: split.fee,
+      notBefore,
+    });
+  } else {
+    // Custodial orders pay the platform escrow wallet in full; direct
+    // orders pay the seller with the fee split off to the treasury.
+    const escrowAddress = order.escrow ? getEscrowAddress() : null;
+    if (order.escrow && !escrowAddress) {
+      return NextResponse.json(
+        { error: { code: "escrow_unavailable", message: "Escrow is not configured on this server." } },
+        { status: 500 },
+      );
+    }
+    const treasury = treasuryAddress();
+    payTo = escrowAddress ?? order.seller_wallet;
+    // BigInt split from the shared helper; verifyPayment takes plain numbers.
+    const amount = lamportsToNumber(split.gross);
+    const platformFee = lamportsToNumber(split.fee);
+    const sellerMin = escrowAddress ? amount : lamportsToNumber(split.sellerNet);
+    check = await verifyPayment({
+      signature: parsed.data.signature,
+      buyer: order.buyer_wallet,
+      seller: payTo,
+      sellerMinLamports: sellerMin,
+      treasury: escrowAddress ? null : treasury,
+      feeLamports: escrowAddress ? 0 : platformFee,
+      notBefore,
+    });
+  }
   if (!check.ok) {
     return NextResponse.json(
       { error: { code: "unverified", message: `Payment could not be verified (${check.reason}).` } },

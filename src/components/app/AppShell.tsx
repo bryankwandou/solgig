@@ -7,7 +7,7 @@ import { LogoLockup } from "@/components/brand/Logo";
 import { useAuth } from "@/lib/auth/useAuth";
 import { shortAddress } from "@/lib/utils";
 import { cn } from "@/lib/utils";
-import { LocaleSwitch, useCopy } from "@/lib/i18n";
+import { LocaleSwitch, ThemeToggle, useCopy } from "@/lib/i18n";
 
 const WalletMultiButton = dynamic(
   () =>
@@ -32,7 +32,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         className="px-5 py-1.5 text-center text-xs font-medium"
         style={
           IS_MAINNET
-            ? { background: "var(--brand-violet)", color: "#fff" }
+            ? { background: "var(--brand-violet)", color: "oklch(0.99 0 0)" }
             : { background: "var(--warn)", color: "var(--on-brand)" }
         }
       >
@@ -70,6 +70,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <span className="text-xs text-[var(--text-mut)]">{copy.app.signingIn}</span>
             )}
             <LocaleSwitch className="hidden sm:inline-flex" />
+            <ThemeToggle />
+            {user && (
+              <span
+                className="hidden font-mono text-xs text-[var(--text-mut)] lg:inline"
+                title={`${copy.app.connectedAs} ${user.wallet_address}`}
+              >
+                {user.username ? `@${user.username}` : shortAddress(user.wallet_address)}
+              </span>
+            )}
             {user && (
               <button
                 onClick={signOut}
@@ -110,16 +119,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
       </header>
 
-      {user && (
-        <div className="border-b" style={{ background: "var(--surface)" }}>
-          <div className="mx-auto max-w-[1200px] px-5 py-1.5 text-xs text-[var(--text-mut)]">
-            {copy.app.connectedAs}{" "}
-            <span className="font-mono">
-              {user.username ? `@${user.username}` : shortAddress(user.wallet_address)}
-            </span>
-          </div>
-        </div>
-      )}
 
       <main className="mx-auto max-w-[1200px] px-5 py-8">{children}</main>
     </div>
