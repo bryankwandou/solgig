@@ -97,6 +97,12 @@ async function main() {
   const cdp = connect(target.webSocketDebuggerUrl);
   await cdp.ready;
   await cdp.send("Page.enable");
+  // Headless screencast does not reliably fire the in-view triggers, which
+  // left sections invisible in the first recording. Reduced motion renders
+  // every section at rest, the same setting shots.mjs uses.
+  await cdp.send("Emulation.setEmulatedMedia", {
+    features: [{ name: "prefers-reduced-motion", value: "reduce" }],
+  });
   await cdp.send("Emulation.setDeviceMetricsOverride", {
     width: W,
     height: H,
