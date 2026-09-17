@@ -76,7 +76,7 @@ export default function DashboardPage() {
         <h1 className="font-display text-2xl font-bold">{t.dashboard.title}</h1>
         <Link
           href="/dashboard/new"
-          className="rounded-full px-4 py-2 text-sm font-medium text-black"
+          className="rounded-full px-4 py-2 text-sm font-medium text-[var(--on-brand)]"
           style={{ background: "var(--brand-grad)" }}
         >
           {t.dashboard.newListing}
