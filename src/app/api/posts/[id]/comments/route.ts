@@ -3,6 +3,7 @@ import { z } from "zod";
 import { sql } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { rateLimit } from "@/lib/rate-limit";
+import { apiError, readUuidParam, unauthorized } from "@/lib/http";
 
 export const runtime = "nodejs";
 
@@ -11,7 +12,8 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const { id } = await params;
+  const { id, error } = await readUuidParam(params, "id", "That post is gone.");
+  if (error) return error;
   const items = await sql`
     SELECT c.id, c.content, c.created_at,
            u.username AS author_username, u.display_name AS author_name,
@@ -37,13 +39,9 @@ export async function POST(
   const limited = rateLimit({ req, key: "comment", limit: 20, windowMs: 60_000 });
   if (limited) return limited;
   const user = await getCurrentUser();
-  if (!user) {
-    return NextResponse.json(
-      { error: { code: "unauthorized", message: "Connect a wallet first." } },
-      { status: 401 },
-    );
-  }
-  const { id } = await params;
+  if (!user) return unauthorized();
+  const { id, error } = await readUuidParam(params, "id", "That post is gone.");
+  if (error) return error;
   const parsed = CreateComment.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) {
     return NextResponse.json(
@@ -52,21 +50,23 @@ export async function POST(
     );
   }
 
-  const inserted = (await sql`
-    INSERT INTO post_comments (post_id, author_id, content)
-    SELECT ${id}, ${user.id}, ${parsed.data.content}
-    WHERE EXISTS (SELECT 1 FROM posts WHERE id = ${id})
-    RETURNING id, content, created_at
-  `) as { id: string; content: string; created_at: string }[];
-  if (!inserted[0]) {
-    return NextResponse.json(
-      { error: { code: "not_found", message: "That post is gone." } },
-      { status: 404 },
-    );
-  }
-  await sql`
-    UPDATE posts SET comments_count = comments_count + 1 WHERE id = ${id}
-  `;
+  // Insert and recount in one transaction; the count is derived from the
+  // rows, so it cannot drift if a request dies between the two writes.
+  const [insertedRows] = await sql.transaction([
+    sql`
+      INSERT INTO post_comments (post_id, author_id, content)
+      SELECT ${id}, ${user.id}, ${parsed.data.content}
+      WHERE EXISTS (SELECT 1 FROM posts WHERE id = ${id})
+      RETURNING id, content, created_at
+    `,
+    sql`
+      UPDATE posts
+      SET comments_count = (SELECT COUNT(*)::int FROM post_comments WHERE post_id = ${id})
+      WHERE id = ${id}
+    `,
+  ]);
+  const inserted = insertedRows as { id: string; content: string; created_at: string }[];
+  if (!inserted[0]) return apiError(404, "not_found", "That post is gone.");
   return NextResponse.json(
     {
       comment: {

@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { PublicKey } from "@solana/web3.js";
 import { sql } from "@/lib/db";
 import { randomNonce, buildSiwsMessage, SIWS_DOMAIN } from "@/lib/auth/siws";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimitDurable } from "@/lib/rate-limit-db";
 
 export const runtime = "nodejs";
 
 // Issue a single-use nonce bound to a wallet, valid for five minutes.
 export async function POST(req: NextRequest) {
-  const limited = rateLimit({ req, key: "nonce", limit: 10, windowMs: 60_000 });
+  const limited = await rateLimitDurable({ req, key: "nonce", limit: 10, windowMs: 60_000 });
   if (limited) return limited;
   const { wallet } = await req.json().catch(() => ({}));
   if (!wallet || typeof wallet !== "string") {

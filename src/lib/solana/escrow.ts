@@ -6,6 +6,7 @@ import {
 } from "@solana/web3.js";
 import bs58 from "bs58";
 import { getConnection } from "./pay";
+import { lamportsToNumber, treasuryAddress, type Split } from "@/lib/fees";
 
 /**
  * Custodial escrow for service orders. When ESCROW_SECRET_KEY is set,
@@ -46,17 +47,21 @@ export class PayoutInFlightError extends Error {
  */
 export async function releaseEscrow(params: {
   seller: string;
-  amountLamports: number;
-  feeLamports: number;
+  split: Split;
   onSigned: (signature: string) => Promise<void>;
 }): Promise<string> {
   const escrow = getEscrowKeypair();
   if (!escrow) throw new Error("escrow_disabled");
 
   const connection = getConnection();
-  const treasury = process.env.NEXT_PUBLIC_PLATFORM_TREASURY || null;
-  const fee = treasury ? params.feeLamports : 0;
-  const sellerCut = params.amountLamports - fee;
+  const treasury = treasuryAddress();
+  // The fee was fixed on the order. If the treasury has since been unset,
+  // refuse before signing instead of paying the seller more than the net the
+  // order (and the earnings counter) records. Nothing is signed, so the
+  // caller hands the order back to 'paid'.
+  if (params.split.fee > 0n && !treasury) throw new Error("treasury_missing");
+  const fee = lamportsToNumber(params.split.fee);
+  const sellerCut = lamportsToNumber(params.split.sellerNet);
 
   const tx = new Transaction().add(
     SystemProgram.transfer({
