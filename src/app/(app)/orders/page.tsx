@@ -155,7 +155,7 @@ export default function OrdersPage() {
                     <button
                       onClick={() => download(o.id)}
                       disabled={busy === o.id}
-                      className="rounded-full px-4 py-1.5 text-xs font-semibold text-black disabled:opacity-60"
+                      className="rounded-full px-4 py-1.5 text-xs font-semibold text-[var(--on-brand)] disabled:opacity-60"
                       style={{ background: "var(--brand-grad)" }}
                     >
                       {busy === o.id ? t.orders.opening : t.orders.download}
@@ -166,7 +166,7 @@ export default function OrdersPage() {
                     <button
                       onClick={() => markComplete(o.id)}
                       disabled={busy === o.id}
-                      className="rounded-full px-4 py-1.5 text-xs font-semibold text-black disabled:opacity-60"
+                      className="rounded-full px-4 py-1.5 text-xs font-semibold text-[var(--on-brand)] disabled:opacity-60"
                       style={{ background: "var(--brand-grad)" }}
                     >
                       {busy === o.id

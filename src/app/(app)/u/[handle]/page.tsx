@@ -110,7 +110,7 @@ export default function ProfilePage() {
               />
             ) : (
               <div
-                className="grid h-16 w-16 place-items-center rounded-full text-2xl font-bold text-black"
+                className="grid h-16 w-16 place-items-center rounded-full text-2xl font-bold text-[var(--on-brand)]"
                 style={{ background: "var(--brand-grad)" }}
               >
                 {name.slice(0, 1).toUpperCase()}
