@@ -49,24 +49,27 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const inserted = await sql`
-    INSERT INTO reviews (order_id, reviewer_id, reviewee_id, product_id, rating, body)
-    VALUES (${orderId}, ${user.id}, ${order.seller_id}, ${order.product_id}, ${rating}, ${body ?? null})
-    ON CONFLICT (order_id, reviewer_id) DO NOTHING
-    RETURNING id
-  `;
-  if (inserted.length === 0) {
-    // Already reviewed — nothing to recount, and no reputation to re-award.
-    return NextResponse.json(
-      { error: { code: "duplicate", message: "You already reviewed this order." } },
-      { status: 409 },
-    );
-  }
-
-  // Recompute the product rating aggregate from its reviews (service
-  // orders carry no product, so there is nothing to recount for them).
-  if (order.product_id) {
-    await sql`
+  // Insert, rating recount and reputation commit together. The reputation
+  // bump is chained to the insert through a CTE, so a duplicate review
+  // (ON CONFLICT DO NOTHING) awards nothing. The recount derives from the
+  // reviews table, so repeating it is harmless.
+  const [insertedRows] = await sql.transaction([
+    sql`
+      WITH ins AS (
+        INSERT INTO reviews (order_id, reviewer_id, reviewee_id, product_id, rating, body)
+        VALUES (${orderId}, ${user.id}, ${order.seller_id}, ${order.product_id}, ${rating}, ${body ?? null})
+        ON CONFLICT (order_id, reviewer_id) DO NOTHING
+        RETURNING id, rating
+      ),
+      rep AS (
+        UPDATE users SET reputation_score = reputation_score + ins.rating
+        FROM ins WHERE users.id = ${order.seller_id}
+        RETURNING users.id
+      )
+      SELECT id FROM ins
+    `,
+    // Service orders carry no product; product_id = NULL matches nothing.
+    sql`
       UPDATE products p SET
         rating_count = sub.c,
         rating_average = sub.a
@@ -75,13 +78,15 @@ export async function POST(req: NextRequest) {
         FROM reviews WHERE product_id = ${order.product_id} GROUP BY product_id
       ) sub
       WHERE p.id = sub.product_id
-    `;
+    `,
+  ]);
+  if ((insertedRows as unknown[]).length === 0) {
+    // Already reviewed: nothing was recounted and no reputation re-awarded.
+    return NextResponse.json(
+      { error: { code: "duplicate", message: "You already reviewed this order." } },
+      { status: 409 },
+    );
   }
-  // Mirror a simple reputation signal onto the seller.
-  await sql`
-    UPDATE users SET reputation_score = reputation_score + ${rating}
-    WHERE id = ${order.seller_id}
-  `;
 
   return NextResponse.json({ ok: true }, { status: 201 });
 }

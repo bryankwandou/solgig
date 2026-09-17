@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth/current-user";
+import { orderSplit } from "@/lib/fees";
+import { readUuidParam, unauthorized } from "@/lib/http";
 import {
   releaseEscrow,
   payoutStatus,
@@ -32,13 +34,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const user = await getCurrentUser();
-  if (!user) {
-    return NextResponse.json(
-      { error: { code: "unauthorized", message: "Connect a wallet first." } },
-      { status: 401 },
-    );
-  }
-  const { id } = await params;
+  if (!user) return unauthorized();
+  const { id, error } = await readUuidParam(params, "id", "No paid service order found for you here.");
+  if (error) return error;
 
   // Claim the order so a double-click or a concurrent request can never
   // start two payouts. An order already 'releasing' is only reclaimable
@@ -56,8 +54,8 @@ export async function POST(
     service_id: string | null;
     seller_id: string;
     seller_wallet: string;
-    amount_lamports: number;
-    platform_fee_lamports: number;
+    amount_lamports: string | number;
+    platform_fee_lamports: string | number | null;
     escrow: boolean;
     payout_tx_signature: string | null;
   }[];
@@ -76,6 +74,7 @@ export async function POST(
     );
   }
 
+  const split = orderSplit(order);
   let payoutSignature: string | null = null;
   if (order.escrow) {
     try {
@@ -86,11 +85,9 @@ export async function POST(
       if (prior === "landed") {
         payoutSignature = order.payout_tx_signature;
       } else {
-        // BIGINT columns arrive as strings from the driver; coerce before math.
         payoutSignature = await releaseEscrow({
           seller: order.seller_wallet,
-          amountLamports: Number(order.amount_lamports),
-          feeLamports: Number(order.platform_fee_lamports),
+          split,
           onSigned: async (signature) => {
             await sql`
               UPDATE orders SET payout_tx_signature = ${signature} WHERE id = ${id}
@@ -115,30 +112,31 @@ export async function POST(
     }
   }
 
-  const done = await sql`
-    UPDATE orders
-    SET status = 'completed', completed_at = NOW(),
-        payout_tx_signature = ${payoutSignature}
-    WHERE id = ${id} AND status = 'releasing'
-    RETURNING id
-  `;
-  if (done.length > 0) {
-    if (order.service_id) {
-      await sql`
-        UPDATE services SET total_orders = total_orders + 1 WHERE id = ${order.service_id}
-      `;
-    }
-    // Credit the net, as confirm does for products: the platform fee went to
-    // the treasury (escrow release and direct payment both split it off).
-    const net =
-      Number(order.amount_lamports) - Number(order.platform_fee_lamports);
-    await sql`
+  // Close the order and bump the counters in one statement so they commit
+  // together. Only the request that moves 'releasing' to 'completed' credits
+  // the seller, with the net from the same helper confirm uses.
+  await sql`
+    WITH done AS (
+      UPDATE orders
+      SET status = 'completed', completed_at = NOW(),
+          payout_tx_signature = ${payoutSignature}
+      WHERE id = ${id} AND status = 'releasing'
+      RETURNING id
+    ),
+    svc AS (
+      UPDATE services SET total_orders = total_orders + 1
+      WHERE id = ${order.service_id} AND EXISTS (SELECT 1 FROM done)
+      RETURNING id
+    ),
+    seller AS (
       UPDATE users
-      SET total_earned_lamports = total_earned_lamports + ${net},
+      SET total_earned_lamports = total_earned_lamports + ${split.sellerNet.toString()}::bigint,
           completed_orders = completed_orders + 1
-      WHERE id = ${order.seller_id}
-    `;
-  }
+      WHERE id = ${order.seller_id} AND EXISTS (SELECT 1 FROM done)
+      RETURNING id
+    )
+    SELECT id FROM done
+  `;
 
   return NextResponse.json({ ok: true, status: "completed", payoutSignature });
 }

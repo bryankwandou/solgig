@@ -3,13 +3,13 @@ import { sql } from "@/lib/db";
 import { buildSiwsMessage, verifySiwsSignature, SIWS_DOMAIN as DOMAIN } from "@/lib/auth/siws";
 import { createSession } from "@/lib/auth/session";
 import { upsertUserByWallet } from "@/lib/auth/current-user";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimitDurable } from "@/lib/rate-limit-db";
 
 export const runtime = "nodejs";
 
 // Verify a signed SIWS message, burn the nonce, and open a session.
 export async function POST(req: NextRequest) {
-  const limited = rateLimit({ req, key: "verify", limit: 10, windowMs: 60_000 });
+  const limited = await rateLimitDurable({ req, key: "verify", limit: 10, windowMs: 60_000 });
   if (limited) return limited;
   const { wallet, signature, nonce } = await req.json().catch(() => ({}));
   if (!wallet || !signature || !nonce) {
@@ -66,7 +66,8 @@ export async function POST(req: NextRequest) {
   }
 
   const user = await upsertUserByWallet(wallet);
-  await createSession({ userId: user.id, wallet });
+  await createSession({ userId: user.id, wallet, sv: Number(user.session_version) });
 
-  return NextResponse.json({ user });
+  const { session_version: _sv, ...publicUser } = user;
+  return NextResponse.json({ user: publicUser });
 }

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { sql } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth/current-user";
+import { lamportsToNumber, orderSplit, treasuryAddress } from "@/lib/fees";
+import { readUuidParam, unauthorized } from "@/lib/http";
 import { verifyPayment } from "@/lib/solana/pay";
 import { getEscrowAddress } from "@/lib/solana/escrow";
 
@@ -16,13 +18,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const user = await getCurrentUser();
-  if (!user) {
-    return NextResponse.json(
-      { error: { code: "unauthorized", message: "Connect a wallet first." } },
-      { status: 401 },
-    );
-  }
-  const { id } = await params;
+  if (!user) return unauthorized();
+  const { id, error } = await readUuidParam(params, "id", "Order not found.");
+  if (error) return error;
   const parsed = Confirm.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) {
     return NextResponse.json(
@@ -41,8 +39,8 @@ export async function POST(
     buyer_id: string;
     seller_wallet: string;
     buyer_wallet: string;
-    amount_lamports: number;
-    platform_fee_lamports: number;
+    amount_lamports: string | number;
+    platform_fee_lamports: string | number | null;
     product_id: string | null;
     service_id: string | null;
     order_type: string;
@@ -70,13 +68,13 @@ export async function POST(
       { status: 500 },
     );
   }
-  const treasury = process.env.NEXT_PUBLIC_PLATFORM_TREASURY || null;
+  const treasury = treasuryAddress();
   const payTo = escrowAddress ?? order.seller_wallet;
-  // BIGINT columns arrive as strings from the driver; without Number() the
-  // additions inside verifyPayment silently concatenate and reject everyone.
-  const amount = Number(order.amount_lamports);
-  const platformFee = Number(order.platform_fee_lamports);
-  const sellerMin = escrowAddress ? amount : amount - platformFee;
+  // BigInt split from the shared helper; verifyPayment takes plain numbers.
+  const split = orderSplit(order);
+  const amount = lamportsToNumber(split.gross);
+  const platformFee = lamportsToNumber(split.fee);
+  const sellerMin = escrowAddress ? amount : lamportsToNumber(split.sellerNet);
   const check = await verifyPayment({
     signature: parsed.data.signature,
     buyer: order.buyer_wallet,
@@ -100,7 +98,7 @@ export async function POST(
   const inserted = await sql`
     INSERT INTO transactions (signature, order_id, from_address, to_address, amount_lamports)
     VALUES (${parsed.data.signature}, ${id}, ${order.buyer_wallet},
-            ${payTo}, ${order.amount_lamports})
+            ${payTo}, ${split.gross.toString()})
     ON CONFLICT (signature) DO NOTHING
     RETURNING id
   `;
@@ -120,30 +118,36 @@ export async function POST(
   // at 'paid' until the buyer accepts the delivered work.
   const nextStatus = order.order_type === "service" ? "paid" : "completed";
 
-  // Guarded update: only the confirm that flips pending forward gets to
-  // bump the counters, so concurrent retries stay idempotent.
-  const updated = await sql`
-    UPDATE orders
-    SET status = ${nextStatus}, payment_tx_signature = ${parsed.data.signature},
-        paid_at = NOW(),
-        completed_at = CASE WHEN ${nextStatus} = 'completed' THEN NOW() ELSE NULL END
-    WHERE id = ${id} AND status = 'pending'
-    RETURNING id
-  `;
-  if (updated.length > 0 && nextStatus === "completed" && order.product_id) {
-    await sql`
-      UPDATE products SET total_purchases = total_purchases + 1 WHERE id = ${order.product_id}
-    `;
-    // The seller is credited what actually reached them. The platform fee
-    // went to the treasury, so counting the gross here would overstate every
-    // seller's lifetime earnings by the fee on every sale.
-    await sql`
+  // The status flip and the counters are one statement (data-modifying
+  // CTEs), so they commit or fail together. Only the confirm that actually
+  // flips pending forward (`upd` returns a row) bumps the counters, so
+  // concurrent retries stay idempotent. The seller is credited the net.
+  const credit = nextStatus === "completed" && !!order.product_id;
+  await sql`
+    WITH upd AS (
+      UPDATE orders
+      SET status = ${nextStatus}, payment_tx_signature = ${parsed.data.signature},
+          paid_at = NOW(),
+          completed_at = CASE WHEN ${nextStatus} = 'completed' THEN NOW() ELSE NULL END
+      WHERE id = ${id} AND status = 'pending'
+      RETURNING id
+    ),
+    prod AS (
+      UPDATE products SET total_purchases = total_purchases + 1
+      WHERE ${credit}::boolean AND id = ${order.product_id}
+        AND EXISTS (SELECT 1 FROM upd)
+      RETURNING id
+    ),
+    seller AS (
       UPDATE users
-      SET total_earned_lamports = total_earned_lamports + ${amount - platformFee},
+      SET total_earned_lamports = total_earned_lamports + ${split.sellerNet.toString()}::bigint,
           completed_orders = completed_orders + 1
-      WHERE id = ${order.seller_id}
-    `;
-  }
+      WHERE ${credit}::boolean AND id = ${order.seller_id}
+        AND EXISTS (SELECT 1 FROM upd)
+      RETURNING id
+    )
+    SELECT id FROM upd
+  `;
 
   return NextResponse.json({ ok: true, status: nextStatus });
 }

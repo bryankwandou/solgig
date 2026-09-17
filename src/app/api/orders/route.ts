@@ -4,6 +4,7 @@ import { sql } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { rateLimit } from "@/lib/rate-limit";
 import { getEscrowAddress } from "@/lib/solana/escrow";
+import { lamportsToNumber, splitAmount, treasuryAddress } from "@/lib/fees";
 
 export const runtime = "nodejs";
 
@@ -82,7 +83,7 @@ export async function POST(req: NextRequest) {
         `
   ) as {
     id: string;
-    price_lamports: number;
+    price_lamports: string | number;
     seller_id: string;
     seller_wallet: string;
   }[];
@@ -100,11 +101,11 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const feeBps = Number(process.env.NEXT_PUBLIC_PLATFORM_FEE_BPS ?? 250);
-  const treasury = process.env.NEXT_PUBLIC_PLATFORM_TREASURY || null;
-  // BIGINT columns arrive as strings from the driver; coerce before math.
-  const price = Number(listing.price_lamports);
-  const fee = treasury ? Math.floor((price * feeBps) / 10000) : 0;
+  const treasury = treasuryAddress();
+  const split = splitAmount(listing.price_lamports, { treasury });
+  const price = lamportsToNumber(split.gross);
+  const fee = lamportsToNumber(split.fee);
+  const sellerNet = lamportsToNumber(split.sellerNet);
 
   // Service orders route through the platform escrow wallet when one is
   // configured; the funds only reach the seller after the buyer accepts.
@@ -123,7 +124,7 @@ export async function POST(req: NextRequest) {
     VALUES
       (${orderNumber}, ${isService ? "service" : "product"}, ${user.id},
        ${listing.seller_id}, ${isService ? null : listing.id},
-       ${isService ? listing.id : null}, ${listing.price_lamports}, ${fee},
+       ${isService ? listing.id : null}, ${split.gross.toString()}, ${split.fee.toString()},
        ${user.wallet_address}, ${listing.seller_wallet}, 'pending', ${useEscrow})
     RETURNING id, order_number
   `;
@@ -149,11 +150,11 @@ export async function POST(req: NextRequest) {
           payTo: listing.seller_wallet,
           sellerWallet: listing.seller_wallet,
           amountLamports: price,
-          sellerLamports: price - fee,
+          sellerLamports: sellerNet,
           feeLamports: fee,
           treasury,
           transfers: [
-            { to: listing.seller_wallet, lamports: price - fee },
+            { to: listing.seller_wallet, lamports: sellerNet },
             ...(treasury && fee > 0 ? [{ to: treasury, lamports: fee }] : []),
           ],
         },

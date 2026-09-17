@@ -201,3 +201,19 @@ CREATE INDEX IF NOT EXISTS idx_follows_following ON follows(following_id);
 CREATE INDEX IF NOT EXISTS idx_services_published ON services(is_published, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_posts_author ON posts(author_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_nonces_expiry ON auth_nonces(expires_at);
+
+-- =========================================
+-- ROUND 3: server-side session revocation and shared rate limits
+-- =========================================
+-- Every session token carries the user's session_version. Logout bumps it,
+-- which invalidates every token issued before (all devices).
+ALTER TABLE users ADD COLUMN IF NOT EXISTS session_version INTEGER NOT NULL DEFAULT 0;
+
+-- Fixed-window request counters shared by all serverless instances.
+CREATE TABLE IF NOT EXISTS rate_limits (
+  bucket TEXT NOT NULL,
+  window_start TIMESTAMPTZ NOT NULL,
+  hits INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (bucket, window_start)
+);
+CREATE INDEX IF NOT EXISTS idx_rate_limits_window ON rate_limits(window_start);
