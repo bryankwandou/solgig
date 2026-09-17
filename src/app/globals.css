@@ -9,6 +9,8 @@
   --brand-grad: linear-gradient(135deg, var(--brand-violet), var(--brand-mint));
 
   --bg: oklch(0.16 0.01 280);
+  /* Text on the brand gradient; stays dark in both themes. */
+  --on-brand: oklch(0.16 0.01 280);
   --surface: oklch(0.20 0.012 280);
   --surface-2: oklch(0.24 0.014 280);
   --border: oklch(0.30 0.015 280);

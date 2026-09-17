@@ -136,7 +136,7 @@ export default function ProfilePage() {
               style={
                 isFollowing
                   ? { border: "1px solid var(--border)", color: "var(--text-mut)" }
-                  : { background: "var(--brand-grad)", color: "#000" }
+                  : { background: "var(--brand-grad)", color: "var(--on-brand)" }
               }
             >
               {isFollowing ? t.profile.followingBtn : t.profile.follow}

@@ -1,5 +1,7 @@
 # Pemeriksaan terhadap pedoman penilaian
 
+> **Diperbarui 17 September 2026:** tabel di bawah adalah keadaan 16 September. Status terbaru ada di `docs/LAPORAN.md` bagian 6.
+
 Dokumen ini menjawab satu pertanyaan: dari daftar syarat di pedoman, mana yang
 sudah terpenuhi dan mana yang belum. Kolom status diisi apa adanya. Butir yang
 belum selesai ditulis belum selesai, bukan ditulis "sebagian" supaya terlihat

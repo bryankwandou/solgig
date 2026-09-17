@@ -184,6 +184,9 @@ function BuyPanel({ product }: { product: Product }) {
     }
   }
 
+  const buyDisabled =
+    isOwn || !user || ["creating", "paying", "confirming"].includes(state.step);
+
   return (
     <div className="rounded-[var(--radius-md)] border p-6" style={{ background: "var(--surface)" }}>
       <div className="font-display text-3xl font-bold text-grad">
@@ -199,13 +202,15 @@ function BuyPanel({ product }: { product: Product }) {
         <>
           <button
             onClick={buy}
-            disabled={
-              isOwn ||
-              !user ||
-              ["creating", "paying", "confirming"].includes(state.step)
+            disabled={buyDisabled}
+            // A dimmed gradient left dark text unreadable; disabled gets a
+            // neutral surface with light text instead.
+            className="mt-5 w-full rounded-full px-5 py-3 text-sm font-semibold disabled:cursor-not-allowed"
+            style={
+              buyDisabled
+                ? { background: "var(--border)", color: "var(--text)" }
+                : { background: "var(--brand-grad)", color: "var(--on-brand)" }
             }
-            className="mt-5 w-full rounded-full px-5 py-3 text-sm font-semibold text-black disabled:opacity-40"
-            style={{ background: "var(--brand-grad)" }}
           >
             {isOwn
               ? t.product.own
