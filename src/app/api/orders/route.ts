@@ -5,8 +5,18 @@ import { getCurrentUser } from "@/lib/auth/current-user";
 import { rateLimit } from "@/lib/rate-limit";
 import { getEscrowAddress } from "@/lib/solana/escrow";
 import { lamportsToNumber, splitAmount, treasuryAddress } from "@/lib/fees";
+import {
+  escrowProgramId,
+  openEscrowIx,
+  purchaseIx,
+  toWire,
+} from "@/lib/solana/program";
+import { PublicKey } from "@solana/web3.js";
 
 export const runtime = "nodejs";
+
+/** How long a buyer waits before they may pull an undelivered escrow back. */
+const ESCROW_WINDOW_SECONDS = 14 * 24 * 60 * 60;
 
 const CreateOrder = z
   .object({
@@ -28,7 +38,7 @@ export async function GET() {
   }
   const items = await sql`
     SELECT o.id, o.order_number, o.order_type, o.status, o.amount_lamports,
-           o.payment_tx_signature, o.created_at, o.completed_at,
+           o.settlement, o.buyer_wallet, o.payment_tx_signature, o.created_at, o.completed_at,
            p.slug AS product_slug,
            COALESCE(p.title, s.title) AS product_title,
            COALESCE(p.thumbnail_url, s.thumbnail_url) AS product_thumbnail,
@@ -107,45 +117,88 @@ export async function POST(req: NextRequest) {
   const fee = lamportsToNumber(split.fee);
   const sellerNet = lamportsToNumber(split.sellerNet);
 
-  // Service orders route through the platform escrow wallet when one is
-  // configured; the funds only reach the seller after the buyer accepts.
-  const escrowAddress = isService ? getEscrowAddress() : null;
-  const useEscrow = !!escrowAddress;
+  // Settlement, in order of preference: the on-chain escrow program; the
+  // platform escrow wallet for services (older deployments); a direct
+  // transfer. The program needs a treasury because its config names one.
+  const program = treasury ? escrowProgramId() : null;
+  const custodial = !program && isService ? getEscrowAddress() : null;
+  const settlement = program ? "program" : custodial ? "custodial" : "transfer";
+  const heldInEscrow = isService && settlement !== "transfer";
 
   const orderNumber = (
     await sql`SELECT 'SG-2026-' || LPAD(nextval('order_seq')::text, 6, '0') AS n`
   )[0].n as string;
 
-  const rows = await sql`
+  const rows = (await sql`
     INSERT INTO orders
       (order_number, order_type, buyer_id, seller_id, product_id, service_id,
        amount_lamports, platform_fee_lamports, buyer_wallet, seller_wallet,
-       status, escrow)
+       status, escrow, settlement)
     VALUES
       (${orderNumber}, ${isService ? "service" : "product"}, ${user.id},
        ${listing.seller_id}, ${isService ? null : listing.id},
        ${isService ? listing.id : null}, ${split.gross.toString()}, ${split.fee.toString()},
-       ${user.wallet_address}, ${listing.seller_wallet}, 'pending', ${useEscrow})
+       ${user.wallet_address}, ${listing.seller_wallet}, 'pending', ${heldInEscrow},
+       ${settlement})
     RETURNING id, order_number
-  `;
+  `) as { id: string; order_number: string }[];
+  const order = rows[0];
+
+  if (program) {
+    // One program instruction does the whole payment. Goods: seller and
+    // treasury are paid and a receipt is written. Services: the amount is
+    // locked in a program-owned account until the buyer releases it.
+    const parties = {
+      orderId: order.id,
+      buyer: new PublicKey(user.wallet_address),
+      seller: new PublicKey(listing.seller_wallet),
+    };
+    const ix = isService
+      ? openEscrowIx(program, {
+          ...parties,
+          amount: split.gross,
+          deadline: BigInt(Math.floor(Date.now() / 1000) + ESCROW_WINDOW_SECONDS),
+        })
+      : purchaseIx(program, { ...parties, treasury: new PublicKey(treasury!), amount: split.gross });
+    return NextResponse.json({
+      order,
+      payment: {
+        settlement,
+        escrow: isService,
+        programId: program.toBase58(),
+        payTo: listing.seller_wallet,
+        amountLamports: price,
+        sellerLamports: sellerNet,
+        feeLamports: fee,
+        treasury,
+        // The program also takes a small refundable deposit for the record
+        // (receipt or escrow account) on top of the amount.
+        instructions: [toWire(ix)],
+        transfers: [],
+      },
+    });
+  }
 
   // `transfers` is the exact list a client must put in one transaction.
   // amountLamports is the total the buyer spends, fee included.
   return NextResponse.json({
-    order: rows[0],
-    payment: useEscrow
+    order,
+    payment: custodial
       ? {
           // The whole amount goes to escrow in one transfer; the fee split
           // happens at release time.
+          settlement,
           escrow: true,
-          payTo: escrowAddress,
+          payTo: custodial,
           amountLamports: price,
           sellerLamports: price,
           feeLamports: 0,
           treasury: null,
-          transfers: [{ to: escrowAddress, lamports: price }],
+          instructions: [],
+          transfers: [{ to: custodial, lamports: price }],
         }
       : {
+          settlement,
           escrow: false,
           payTo: listing.seller_wallet,
           sellerWallet: listing.seller_wallet,
@@ -153,6 +206,7 @@ export async function POST(req: NextRequest) {
           sellerLamports: sellerNet,
           feeLamports: fee,
           treasury,
+          instructions: [],
           transfers: [
             { to: listing.seller_wallet, lamports: sellerNet },
             ...(treasury && fee > 0 ? [{ to: treasury, lamports: fee }] : []),

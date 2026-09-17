@@ -15,6 +15,7 @@ import {
   PublicKey,
   SystemProgram,
   Transaction,
+  TransactionInstruction,
   sendAndConfirmTransaction,
 } from "@solana/web3.js";
 import nacl from "tweetnacl";
@@ -117,17 +118,31 @@ const { order, payment } = await api("/api/orders", {
 });
 log("order", `Order ${order.order_number} open — paying ${payment.amountLamports} lamports in total`);
 
-// 4. Pay on-chain, exactly as the order instructs: one transfer per entry.
+// 4. Pay on-chain, exactly as the order instructs. With the escrow program
+// that is one program instruction (seller, treasury and receipt in one
+// step); on a transfer-only deployment it is one transfer per entry.
 const payTx = new Transaction();
-for (const t of payment.transfers) {
+for (const ix of payment.instructions ?? []) {
   payTx.add(
-    SystemProgram.transfer({
-      fromPubkey: agent.publicKey,
-      toPubkey: new PublicKey(t.to),
-      lamports: t.lamports,
+    new TransactionInstruction({
+      programId: new PublicKey(ix.programId),
+      keys: ix.keys.map((k) => ({ ...k, pubkey: new PublicKey(k.pubkey) })),
+      data: Buffer.from(ix.data, "base64"),
     }),
   );
 }
+if (payTx.instructions.length === 0) {
+  for (const t of payment.transfers) {
+    payTx.add(
+      SystemProgram.transfer({
+        fromPubkey: agent.publicKey,
+        toPubkey: new PublicKey(t.to),
+        lamports: t.lamports,
+      }),
+    );
+  }
+}
+log("pay", payment.programId ? `Settling through program ${payment.programId}` : "Settling by direct transfer");
 const txSig = await sendAndConfirmTransaction(connection, payTx, [agent]);
 log("pay", `Paid on-chain: https://explorer.solana.com/tx/${txSig}?cluster=devnet`);
 
@@ -136,7 +151,7 @@ await api(`/api/orders/${order.id}/confirm`, {
   method: "POST",
   body: JSON.stringify({ signature: txSig }),
 });
-log("confirm", "Server verified the transfer independently and marked the order paid");
+log("confirm", "Server read the on-chain receipt independently and marked the order paid");
 
 // 6. Collect the goods.
 const { fileUrl } = await api(`/api/orders/${order.id}/download`);

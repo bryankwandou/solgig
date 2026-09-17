@@ -52,7 +52,10 @@ export default function TokenOrbit() {
     const group = new THREE.Group();
     scene.add(group);
 
-    const coinGeo = new THREE.CylinderGeometry(0.9, 0.9, 0.16, 48);
+    // Thick, bevel-lit coins: a darker milled edge and a lighter face so the
+    // volume reads even in a still frame.
+    const coinGeo = new THREE.CylinderGeometry(0.9, 0.9, 0.3, 64);
+    const edgeMat = new THREE.MeshStandardMaterial({ color: 0x2a2640, metalness: 0.9, roughness: 0.45 });
     const coins: { mesh: THREE.Mesh; speed: number; radius: number; phase: number; tilt: number }[] = [];
     const COUNT = 9;
 
@@ -63,10 +66,11 @@ export default function TokenOrbit() {
         roughness: 0.25,
         emissive: (i % 2 === 0 ? violet : mint).clone().multiplyScalar(0.12),
       });
-      const mesh = new THREE.Mesh(coinGeo, mat);
+      const mesh = new THREE.Mesh(coinGeo, [edgeMat, mat, mat]);
       const radius = 2.2 + (i % 3) * 0.8;
       const phase = (i / COUNT) * Math.PI * 2;
-      mesh.rotation.x = Math.PI / 2;
+      mesh.rotation.x = Math.PI / 2 - 0.55;
+      mesh.rotation.z = (i / COUNT) * 1.2 - 0.6;
       group.add(mesh);
       coins.push({
         mesh,

@@ -11,6 +11,7 @@ type Post = {
   content: string;
   media_url: string | null;
   likes_count: number;
+  liked_by_me?: boolean;
   comments_count: number;
   created_at: string;
   author_username: string | null;
@@ -145,7 +146,9 @@ type Comment = {
 
 function PostCard({ post, canLike }: { post: Post; canLike: boolean }) {
   const t = useCopy().pages;
-  const [likes, setLikes] = useState(post.likes_count);
+  const [likes, setLikes] = useState(Number(post.likes_count));
+  const [liked, setLiked] = useState(!!post.liked_by_me);
+  const [liking, setLiking] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentCount, setCommentCount] = useState(post.comments_count);
@@ -154,12 +157,30 @@ function PostCard({ post, canLike }: { post: Post; canLike: boolean }) {
   const name = post.author_name || post.author_username || shortAddress(post.author_wallet);
   const handle = post.author_username || post.author_wallet;
 
+  // One request at a time. The UI moves first and the server's count wins;
+  // on failure both the heart and the number go back to where they were.
   async function toggleLike() {
-    if (!canLike) return;
-    const res = await fetch(`/api/posts/${post.id}/like`, { method: "POST" });
-    if (res.ok) {
-      const d = await res.json();
-      setLikes(d.likes);
+    if (!canLike || liking) return;
+    const next = !liked;
+    const before = { liked, likes };
+    setLiking(true);
+    setLiked(next);
+    setLikes((n) => Math.max(0, n + (next ? 1 : -1)));
+    try {
+      const res = await fetch(`/api/posts/${post.id}/like`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ liked: next }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      const d = (await res.json()) as { liked: boolean; likes: number };
+      setLiked(d.liked);
+      setLikes(Number(d.likes));
+    } catch {
+      setLiked(before.liked);
+      setLikes(before.likes);
+    } finally {
+      setLiking(false);
     }
   }
 
@@ -230,10 +251,8 @@ function PostCard({ post, canLike }: { post: Post; canLike: boolean }) {
       )}
       <div className="mt-3 flex items-center gap-4 text-sm text-[var(--text-mut)]">
         <span className="flex items-center gap-2">
-          <button onClick={toggleLike} className="flex items-center gap-2">
-            <LikeBurst />
-          </button>
-          {likes}
+          <LikeBurst on={liked} onToggle={toggleLike} disabled={!canLike || liking} />
+          <span aria-live="polite">{likes}</span>
         </span>
         <button onClick={openComments} className="hover:text-[var(--text)]">
           {t.feed.comments(commentCount)}

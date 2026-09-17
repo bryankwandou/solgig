@@ -10,6 +10,8 @@ export const runtime = "nodejs";
 // GET /api/posts?cursor= — the public feed, newest first, keyset paginated.
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
+  const viewer = await getCurrentUser().catch(() => null);
+  const viewerId = viewer?.id ?? null;
   const limit = 20;
   const cursorRaw = searchParams.get("cursor");
   const cursor =
@@ -21,7 +23,10 @@ export async function GET(req: NextRequest) {
            p.comments_count, p.created_at, p.linked_product_id,
            u.username AS author_username, u.display_name AS author_name,
            u.avatar_url AS author_avatar, u.wallet_address AS author_wallet,
-           pr.slug AS product_slug, pr.title AS product_title, pr.price_lamports AS product_price
+           pr.slug AS product_slug, pr.title AS product_title, pr.price_lamports AS product_price,
+           (${viewerId}::uuid IS NOT NULL AND EXISTS (
+             SELECT 1 FROM post_likes pl WHERE pl.post_id = p.id AND pl.user_id = ${viewerId}::uuid
+           )) AS liked_by_me
     FROM posts p
     JOIN users u ON u.id = p.author_id
     LEFT JOIN products pr ON pr.id = p.linked_product_id

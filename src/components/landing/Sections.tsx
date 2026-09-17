@@ -223,19 +223,20 @@ function AgentTerminal() {
   return (
     <div
       className="overflow-hidden rounded-[var(--radius-md)] border font-mono text-[13px] leading-relaxed"
-      style={{ background: "oklch(0.13 0.01 280)" }}
+      // A terminal stays dark in both themes, so its text colours are fixed too.
+      style={{ background: "oklch(0.13 0.01 280)", color: "oklch(0.95 0 0)", borderColor: "oklch(0.30 0.015 280)" }}
     >
-      <div className="flex items-center gap-1.5 border-b px-4 py-2.5">
+      <div className="flex items-center gap-1.5 border-b px-4 py-2.5" style={{ borderColor: "oklch(0.30 0.015 280)" }}>
         <span className="h-2.5 w-2.5 rounded-full" style={{ background: "oklch(0.6 0.18 25)" }} />
         <span className="h-2.5 w-2.5 rounded-full" style={{ background: "oklch(0.75 0.15 90)" }} />
         <span className="h-2.5 w-2.5 rounded-full" style={{ background: "var(--brand-mint)" }} />
-        <span className="ml-3 text-xs text-[var(--text-mut)]">agent-demo — devnet</span>
+        <span className="ml-3 text-xs" style={{ color: "oklch(0.72 0.01 280)" }}>agent-demo — devnet</span>
       </div>
       <div className="min-h-[290px] px-4 py-4">
         {AGENT_TRACE.map((line, i) => (
           <Reveal key={i} delay={line.d / 1000} dir="up">
             <div className="whitespace-pre-wrap py-0.5">
-              <span style={{ color: i === 0 ? "var(--brand-mint)" : undefined }}>
+              <span style={{ color: i === 0 ? "oklch(0.86 0.20 165)" : undefined }}>
                 {line.t}
               </span>
             </div>
@@ -348,15 +349,6 @@ export function FinalCta() {
   const copy = useCopy();
   return (
     <section className="relative overflow-hidden py-28">
-      <Parallax amount={40} className="absolute inset-0">
-        <div
-          className="absolute inset-[-10%] opacity-40 blur-3xl"
-          style={{
-            background:
-              "radial-gradient(40% 50% at 50% 50%, oklch(0.55 0.24 295 / 0.5), transparent)",
-          }}
-        />
-      </Parallax>
       <div className="relative mx-auto max-w-2xl px-5 text-center">
         <ScrollSkew>
           <h2 className="font-display text-3xl font-bold tracking-tight sm:text-5xl">
