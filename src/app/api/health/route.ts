@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { getEscrowAddress } from "@/lib/solana/escrow";
+import { treasuryAddress } from "@/lib/fees";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,7 +26,7 @@ export async function GET() {
   }
 
   const escrowAddress = getEscrowAddress();
-  const treasury = process.env.NEXT_PUBLIC_PLATFORM_TREASURY || null;
+  const treasury = treasuryAddress();
 
   return NextResponse.json({
     ok: db,

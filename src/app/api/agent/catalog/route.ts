@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
+import { platformFeeBps, treasuryAddress } from "@/lib/fees";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,7 +16,9 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const site = process.env.NEXT_PUBLIC_SITE_URL ?? "";
   const network = process.env.NEXT_PUBLIC_SOLANA_NETWORK ?? "devnet";
-  const feeBps = Number(process.env.NEXT_PUBLIC_PLATFORM_FEE_BPS ?? 250);
+  // Same parsing, clamping and "no treasury, no fee" rule as the order
+  // route, so the advertised fee is the fee actually charged.
+  const feeBps = treasuryAddress() ? Number(platformFeeBps()) : 0;
 
   const products = await sql`
     SELECT p.id, p.slug, p.title, p.short_description, p.product_type,
