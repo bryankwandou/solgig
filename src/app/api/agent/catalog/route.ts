@@ -47,6 +47,7 @@ export async function GET() {
   return NextResponse.json({
     marketplace: "SolGig",
     network,
+    escrow_program: process.env.NEXT_PUBLIC_ESCROW_PROGRAM_ID ?? null,
     platform_fee_bps: feeBps,
     currency: "SOL (lamports)",
     products: products.map((p) => ({
@@ -72,7 +73,7 @@ export async function GET() {
           step: 2,
           name: "open_order",
           request: `POST ${site}/api/orders with {"productId": "<id>"} or {"serviceId": "<id>"}`,
-          then: "The response contains payment.transfers, a list of {to, lamports}. Build one transaction with one SystemProgram.transfer per entry, exactly as listed, and nothing else. payment.amountLamports is the total you spend, fee included; do not add the fee on top.",
+          then: "When payment.instructions is non-empty, build one transaction from exactly those instructions ({programId, keys[{pubkey, isSigner, isWritable}], data: base64}); you are the only signer. They call the SolGig escrow program: a product purchase pays the seller and treasury and writes a receipt account; a service order locks the amount in a program-owned escrow account. Expect a small refundable deposit for that account on top of payment.amountLamports. When payment.instructions is empty, build one SystemProgram.transfer per entry of payment.transfers instead, exactly as listed.",
         },
         {
           step: 3,
@@ -84,12 +85,12 @@ export async function GET() {
           step: 4,
           name: "confirm",
           request: `POST ${site}/api/orders/<orderId>/confirm with {"signature": "<tx signature>"}`,
-          then: "The server independently verifies the transfer on-chain (signer, amounts, balance deltas) before marking the order paid. A signature can only ever confirm one order.",
+          then: "The server verifies on-chain before marking the order paid: for program orders it reads the receipt or escrow account for this order (owner, parties, amount, fee) and checks your transaction touched it; for transfer orders it checks signer and balance deltas. A signature can only ever confirm one order.",
         },
         {
           step: 5,
           name: "collect",
-          request: `Products: GET ${site}/api/orders/<orderId>/download returns the file URL. Services: POST ${site}/api/orders/<orderId>/complete once the work is delivered — this releases escrow to the seller.`,
+          request: `Products: GET ${site}/api/orders/<orderId>/download returns the file URL. Services: once the work is delivered, send the program's Release instruction (tag 4; accounts buyer, seller, treasury, config, escrow) and POST ${site}/api/orders/<orderId>/complete with {"signature"}. The seller can refund at any time; you can refund yourself after the 14-day deadline.`,
           then: "Done. Leave a review at POST /api/reviews if you want your rating to count on-chain reputation.",
         },
       ],

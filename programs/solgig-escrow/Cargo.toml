@@ -1,0 +1,31 @@
+[package]
+name = "solgig-escrow"
+version = "0.1.0"
+edition = "2021"
+description = "SolGig non-custodial escrow + purchase receipts (Pinocchio)"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[features]
+default = []
+
+[dependencies]
+pinocchio = { version = "0.11.2", default-features = false, features = ["cpi"] }
+pinocchio-system = "0.6.1"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = false
+# Arithmetic that can overflow uses checked_* explicitly; the global flag
+# pulls u128 multiply code into every u64 product.
+overflow-checks = false
+
+# Tests live in ./test-suite (own lockfile: mollusk-svm pins older
+# solana-address than pinocchio 0.11 needs).
+[workspace]
+exclude = ["test-suite"]

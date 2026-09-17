@@ -6,7 +6,8 @@
 :root {
   --brand-violet: oklch(0.55 0.24 295);
   --brand-mint: oklch(0.86 0.20 165);
-  --brand-grad: linear-gradient(135deg, var(--brand-violet), var(--brand-mint));
+  /* Solid accent. The two-colour Solana gradient stays in the logo only. */
+  --brand-grad: linear-gradient(var(--brand-mint), var(--brand-mint));
 
   --bg: oklch(0.16 0.01 280);
   /* Text on the brand gradient; stays dark in both themes. */
@@ -43,6 +44,14 @@
   --text: oklch(0.20 0.01 280);
   --text-mut: oklch(0.45 0.01 280);
   --brand-violet: oklch(0.50 0.23 295);
+  /* Mint is too pale on white; a deeper shade keeps text and fills legible. */
+  --brand-mint: oklch(0.62 0.15 165);
+  --on-brand: oklch(0.99 0 0);
+  --shadow-1: 0 1px 2px oklch(0 0 0 / 0.08);
+  --shadow-2: 0 8px 24px oklch(0 0 0 / 0.10);
+}
+html.light {
+  color-scheme: light;
 }
 
 * {
@@ -122,10 +131,7 @@ body {
 }
 
 .text-grad {
-  background: var(--brand-grad);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--brand-mint);
 }
 
 ::selection {

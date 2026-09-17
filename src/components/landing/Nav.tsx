@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LogoLockup } from "@/components/brand/Logo";
 import { MagneticButton } from "@/components/motion";
-import { LocaleSwitch, useCopy } from "@/lib/i18n";
+import { LocaleSwitch, ThemeToggle, useCopy } from "@/lib/i18n";
 
 export function Nav() {
   const copy = useCopy();
@@ -47,6 +47,7 @@ export function Nav() {
         </div>
         <div className="flex items-center gap-3">
           <LocaleSwitch />
+          <ThemeToggle />
           <Link
             href="/marketplace"
             className="hidden text-sm text-[var(--text-mut)] transition-colors hover:text-[var(--text)] sm:block"

@@ -6,11 +6,16 @@ import { useAuth } from "@/lib/auth/useAuth";
 import { formatSol, shortAddress } from "@/lib/utils";
 import { Reveal } from "@/components/motion";
 import { useCopy } from "@/lib/i18n";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { PublicKey, Transaction } from "@solana/web3.js";
+import { escrowProgramId, releaseIx } from "@/lib/solana/program";
 
 type Order = {
   id: string;
   order_number: string;
   order_type: string;
+  settlement: string;
+  buyer_wallet: string;
   status: string;
   amount_lamports: number;
   payment_tx_signature: string | null;
@@ -31,6 +36,8 @@ export default function OrdersPage() {
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const net = process.env.NEXT_PUBLIC_SOLANA_NETWORK ?? "devnet";
+  const { publicKey, sendTransaction } = useWallet();
+  const { connection } = useConnection();
 
   useEffect(() => {
     if (!user) {
@@ -58,11 +65,36 @@ export default function OrdersPage() {
     }
   }
 
-  async function markComplete(orderId: string) {
+  /** Program escrow: the buyer signs Release; the server then checks the chain. */
+  async function signRelease(o: Order): Promise<string | undefined> {
+    const program = escrowProgramId();
+    const treasury = process.env.NEXT_PUBLIC_PLATFORM_TREASURY;
+    if (!program || !treasury || !publicKey) throw new Error(t.orders.connect);
+    const tx = new Transaction().add(
+      releaseIx(program, {
+        orderId: o.id,
+        buyer: new PublicKey(o.buyer_wallet),
+        seller: new PublicKey(o.seller_wallet),
+        treasury: new PublicKey(treasury),
+      }),
+    );
+    const signature = await sendTransaction(tx, connection);
+    const latest = await connection.getLatestBlockhash("confirmed");
+    await connection.confirmTransaction({ signature, ...latest }, "confirmed");
+    return signature;
+  }
+
+  async function markComplete(o: Order) {
+    const orderId = o.id;
     setBusy(orderId);
     setNotice(null);
     try {
-      const res = await fetch(`/api/orders/${orderId}/complete`, { method: "POST" });
+      const signature = o.settlement === "program" ? await signRelease(o) : undefined;
+      const res = await fetch(`/api/orders/${orderId}/complete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(signature ? { signature } : {}),
+      });
       const d = await res.json().catch(() => ({}));
       if (res.ok) {
         setOrders((prev) =>
@@ -71,8 +103,9 @@ export default function OrdersPage() {
       }
       const message = d.message ?? d.error?.message;
       if (message) setNotice(message);
-    } catch {
-      setNotice(t.common.offline);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "";
+      setNotice(msg || t.common.offline);
     } finally {
       setBusy(null);
     }
@@ -164,7 +197,7 @@ export default function OrdersPage() {
                   {o.order_type === "service" &&
                     (o.status === "paid" || o.status === "releasing") && (
                     <button
-                      onClick={() => markComplete(o.id)}
+                      onClick={() => markComplete(o)}
                       disabled={busy === o.id}
                       className="rounded-full px-4 py-1.5 text-xs font-semibold text-[var(--on-brand)] disabled:opacity-60"
                       style={{ background: "var(--brand-grad)" }}

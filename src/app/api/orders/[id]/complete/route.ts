@@ -8,6 +8,8 @@ import {
   payoutStatus,
   PayoutInFlightError,
 } from "@/lib/solana/escrow";
+import { escrowProgramId } from "@/lib/solana/program";
+import { verifyRelease } from "@/lib/solana/settle";
 
 export const runtime = "nodejs";
 
@@ -29,14 +31,60 @@ const releasing = () =>
 // POST /api/orders/[id]/complete — the buyer accepts delivered work on a
 // paid service order. Escrowed funds are released to the seller first;
 // only a confirmed payout closes the order.
+//
+// Program-settled orders are released by the buyer's own signed Release
+// transaction; the body carries its signature and the server only checks
+// the chain. Custodial orders are paid out by the server.
 export async function POST(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const user = await getCurrentUser();
   if (!user) return unauthorized();
   const { id, error } = await readUuidParam(params, "id", "No paid service order found for you here.");
   if (error) return error;
+
+  const programOrder = (await sql`
+    SELECT settlement, buyer_wallet, seller_wallet, amount_lamports,
+           platform_fee_lamports, created_at, status
+    FROM orders
+    WHERE id = ${id} AND buyer_id = ${user.id} AND order_type = 'service'
+      AND settlement = 'program'
+  `) as {
+    buyer_wallet: string;
+    seller_wallet: string;
+    amount_lamports: string | number;
+    platform_fee_lamports: string | number | null;
+    created_at: string;
+    status: string;
+  }[];
+  let releaseSignature: string | null = null;
+  if (programOrder[0]) {
+    const o = programOrder[0];
+    if (o.status === "completed") return NextResponse.json({ ok: true, status: "completed" });
+    const body = (await req.json().catch(() => ({}))) as { signature?: unknown };
+    const program = escrowProgramId();
+    if (typeof body.signature !== "string" || body.signature.length < 32 || !program) {
+      return NextResponse.json(
+        { error: { code: "invalid", message: "Sign the release in your wallet first." } },
+        { status: 422 },
+      );
+    }
+    const check = await verifyRelease(program, body.signature, {
+      orderId: id,
+      buyer: o.buyer_wallet,
+      seller: o.seller_wallet,
+      sellerNet: orderSplit(o).sellerNet,
+      notBefore: Math.floor(new Date(o.created_at).getTime() / 1000) - 120,
+    });
+    if (!check.ok) {
+      return NextResponse.json(
+        { error: { code: "unverified", message: `The release could not be verified (${check.reason}).` } },
+        { status: 400 },
+      );
+    }
+    releaseSignature = body.signature;
+  }
 
   // Claim the order so a double-click or a concurrent request can never
   // start two payouts. An order already 'releasing' is only reclaimable
@@ -75,8 +123,8 @@ export async function POST(
   }
 
   const split = orderSplit(order);
-  let payoutSignature: string | null = null;
-  if (order.escrow) {
+  let payoutSignature: string | null = releaseSignature;
+  if (order.escrow && !releaseSignature) {
     try {
       // An earlier attempt may have landed after its request timed out.
       const prior = order.payout_tx_signature

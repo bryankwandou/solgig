@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
-import { LocaleProvider } from "@/lib/i18n";
+import { LocaleProvider, THEME_BOOT } from "@/lib/i18n";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#17161D",
-  colorScheme: "dark",
+  colorScheme: "dark light",
 };
 
 export default function RootLayout({
@@ -54,7 +54,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
+      </head>
       <body
         className={`${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable}`}
       >
