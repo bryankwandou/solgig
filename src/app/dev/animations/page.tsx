@@ -24,6 +24,7 @@ import {
   useReducedMotionFlag,
 } from "@/components/motion";
 import { LogoMark } from "@/components/brand/Logo";
+import { useCopy } from "@/lib/i18n";
 
 type Demo = { id: string; name: string; note: string; node: React.ReactNode };
 
@@ -43,54 +44,56 @@ function Card({ demo }: { demo: Demo }) {
 export default function AnimationGallery() {
   const reduced = useReducedMotionFlag();
   const [replay, setReplay] = useState(0);
+  const t = useCopy().pages.gallery;
+  const d = (i: number) => ({ name: t.demos[i][0], note: t.demos[i][1] });
+  const label = (i: number) => t.demos[i][2];
 
   const demos: Demo[] = [
-    { id: "01", name: "Reveal", note: "Fade and slide in on scroll, once.", node: <Reveal key={replay}><Pill>In view</Pill></Reveal> },
-    { id: "02", name: "Stagger", note: "Children enter one after another.", node: <Stagger key={replay} className="flex gap-2">{[0,1,2,3].map(i=><StaggerItem key={i}><Pill>{i+1}</Pill></StaggerItem>)}</Stagger> },
-    { id: "03", name: "Split text", note: "Headline reveals word by word.", node: <span key={replay} className="font-display text-xl font-bold"><SplitText text="Sell your work" /></span> },
-    { id: "04", name: "Typewriter", note: "Types on enter, then holds.", node: <TypewriterText key={replay} text="solgig.xyz" className="text-lg" /> },
-    { id: "05", name: "Magnetic button", note: "Drifts toward the pointer.", node: <MagneticButton background="var(--brand-grad)" className="rounded-full px-5 py-2.5 text-sm font-semibold text-black">Hover me</MagneticButton> },
-    { id: "06", name: "Hover tilt", note: "Card tilts in 3D toward the pointer.", node: <HoverTilt><div className="grid h-24 w-36 place-items-center rounded-[var(--radius-md)] border" style={{background:"var(--surface-2)"}}><LogoMark size={36}/></div></HoverTilt> },
-    { id: "07", name: "Glow card", note: "A glow follows the pointer inside.", node: <GlowCard className="grid h-24 w-40 place-items-center"><span className="text-sm text-[var(--text-mut)]">Move inside</span></GlowCard> },
-    { id: "08", name: "Counter up", note: "Counts to a target in view.", node: <span className="font-display text-3xl font-bold text-grad"><CounterUp key={replay} to={4820} suffix=" SOL" /></span> },
-    { id: "09", name: "Parallax", note: "Moves against the scroll.", node: <Parallax amount={20}><Pill>Scroll the page</Pill></Parallax> },
-    { id: "10", name: "Scroll skew", note: "Skews with scroll velocity.", node: <ScrollSkew><span className="font-display text-lg font-bold">Scroll fast</span></ScrollSkew> },
-    { id: "11", name: "Marquee", note: "Auto-scrolls, pauses on hover.", node: <Marquee className="w-full">{["Presets","Beats","Kits","Code","Fonts"].map((t,i)=><span key={i} className="mx-2 rounded-full border px-3 py-1 text-xs">{t}</span>)}</Marquee> },
-    { id: "12", name: "Spotlight", note: "Soft glow tracks the pointer.", node: <Spotlight className="grid h-24 w-40 place-items-center rounded-[var(--radius-md)] border"><span className="text-sm text-[var(--text-mut)]">Move here</span></Spotlight> },
-    { id: "13", name: "Like burst", note: "Heart pops and scatters on tap.", node: <LikeBurst /> },
-    { id: "14", name: "Shimmer skeleton", note: "Loading block with a moving sheen.", node: <div className="w-full space-y-2"><ShimmerSkeleton className="h-3 w-3/4" /><ShimmerSkeleton className="h-3 w-1/2" /><ShimmerSkeleton className="h-3 w-2/3" /></div> },
-    { id: "15", name: "Pulse dot", note: "Status indicator that breathes.", node: <PulseDot label="Live on Solana" /> },
-    { id: "16", name: "Progress ring", note: "Circular fill for a pending action.", node: <ProgressRing key={replay} progress={0.72} /> },
-    { id: "17", name: "Floating orbs", note: "Blurred brand orbs drift behind.", node: <div className="relative h-24 w-40 overflow-hidden rounded-[var(--radius-md)] border"><FloatingOrbs/></div> },
-    { id: "18", name: "Gradient mesh", note: "Slow brand backdrop for the hero.", node: <div className="relative h-24 w-40 overflow-hidden rounded-[var(--radius-md)] border"><GradientMesh/></div> },
+    { id: "01", ...d(0), node: <Reveal key={replay}><Pill>{label(0)}</Pill></Reveal> },
+    { id: "02", ...d(1), node: <Stagger key={replay} className="flex gap-2">{[0,1,2,3].map(i=><StaggerItem key={i}><Pill>{i+1}</Pill></StaggerItem>)}</Stagger> },
+    { id: "03", ...d(2), node: <span key={replay} className="font-display text-xl font-bold"><SplitText key={t.title} text={label(2)} /></span> },
+    { id: "04", ...d(3), node: <TypewriterText key={replay} text="solgig.xyz" className="text-lg" /> },
+    { id: "05", ...d(4), node: <MagneticButton background="var(--brand-grad)" className="rounded-full px-5 py-2.5 text-sm font-semibold text-black">{label(4)}</MagneticButton> },
+    { id: "06", ...d(5), node: <HoverTilt><div className="grid h-24 w-36 place-items-center rounded-[var(--radius-md)] border" style={{background:"var(--surface-2)"}}><LogoMark size={36}/></div></HoverTilt> },
+    { id: "07", ...d(6), node: <GlowCard className="grid h-24 w-40 place-items-center"><span className="text-sm text-[var(--text-mut)]">{label(6)}</span></GlowCard> },
+    { id: "08", ...d(7), node: <span className="font-display text-3xl font-bold text-grad"><CounterUp key={replay} to={4820} suffix=" SOL" /></span> },
+    { id: "09", ...d(8), node: <Parallax amount={20}><Pill>{label(8)}</Pill></Parallax> },
+    { id: "10", ...d(9), node: <ScrollSkew><span className="font-display text-lg font-bold">{label(9)}</span></ScrollSkew> },
+    { id: "11", ...d(10), node: <Marquee className="w-full">{["Presets","Beats","Kits","Code","Fonts"].map((t,i)=><span key={i} className="mx-2 rounded-full border px-3 py-1 text-xs">{t}</span>)}</Marquee> },
+    { id: "12", ...d(11), node: <Spotlight className="grid h-24 w-40 place-items-center rounded-[var(--radius-md)] border"><span className="text-sm text-[var(--text-mut)]">{label(11)}</span></Spotlight> },
+    { id: "13", ...d(12), node: <LikeBurst /> },
+    { id: "14", ...d(13), node: <div className="w-full space-y-2"><ShimmerSkeleton className="h-3 w-3/4" /><ShimmerSkeleton className="h-3 w-1/2" /><ShimmerSkeleton className="h-3 w-2/3" /></div> },
+    { id: "15", ...d(14), node: <PulseDot label={label(14)} /> },
+    { id: "16", ...d(15), node: <ProgressRing key={replay} progress={0.72} /> },
+    { id: "17", ...d(16), node: <div className="relative h-24 w-40 overflow-hidden rounded-[var(--radius-md)] border"><FloatingOrbs/></div> },
+    { id: "18", ...d(17), node: <div className="relative h-24 w-40 overflow-hidden rounded-[var(--radius-md)] border"><GradientMesh/></div> },
   ];
 
   return (
     <main className="mx-auto max-w-[1200px] px-5 py-14">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-bold tracking-tight">Motion gallery</h1>
+          <h1 className="font-display text-3xl font-bold tracking-tight">{t.title}</h1>
           <p className="mt-2 max-w-xl text-sm text-[var(--text-mut)]">
-            Every effect wired into SolGig, running live. Each one collapses to a quiet
-            fade when the system is set to reduce motion.
+            {t.intro}
           </p>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-xs text-[var(--text-mut)]">
-            Reduced motion: {reduced ? "on" : "off"}
+            {t.reduced(reduced)}
           </span>
           <button
             onClick={() => setReplay((v) => v + 1)}
             className="rounded-full border px-4 py-2 text-sm transition-colors hover:bg-[var(--surface)]"
           >
-            Replay entrances
+            {t.replay}
           </button>
           <a
             href="/"
             className="rounded-full px-4 py-2 text-sm font-medium text-black"
             style={{ background: "var(--brand-grad)" }}
           >
-            Back to landing
+            {t.back}
           </a>
         </div>
       </div>
@@ -102,9 +105,7 @@ export default function AnimationGallery() {
       </div>
 
       <p className="mt-12 text-xs text-[var(--text-mut)]">
-        {demos.length} effects shown. The same primitives compose the larger scenes on
-        the landing page, where they are combined into the hero, the escrow flow, and
-        the feed preview.
+        {t.footer(demos.length)}
       </p>
     </main>
   );

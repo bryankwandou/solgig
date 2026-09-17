@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth/current-user";
+import { readUuidParam, unauthorized } from "@/lib/http";
 
 export const runtime = "nodejs";
 
@@ -11,13 +12,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const user = await getCurrentUser();
-  if (!user) {
-    return NextResponse.json(
-      { error: { code: "unauthorized", message: "Connect a wallet first." } },
-      { status: 401 },
-    );
-  }
-  const { id } = await params;
+  if (!user) return unauthorized();
+  const { id, error } = await readUuidParam(params, "id", "No completed order found for you here.");
+  if (error) return error;
 
   const rows = (await sql`
     SELECT p.file_url

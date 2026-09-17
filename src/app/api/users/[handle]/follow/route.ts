@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth/current-user";
+import { z } from "zod";
 import { rateLimit } from "@/lib/rate-limit";
+import { apiError, isUuid, unauthorized } from "@/lib/http";
 
 export const runtime = "nodejs";
 
-// POST /api/users/[handle]/follow — toggle following by user id. Returns the new state.
+const FollowBody = z.object({ following: z.boolean().optional() });
+
+// POST /api/users/[handle]/follow — set (body {following}) or toggle following
+// by user id. Returns the new state. Idempotent: the insert ignores
+// duplicates and both counters are recomputed from `follows` in the same
+// transaction, so double-clicks neither 500 nor skew the counts.
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ handle: string }> },
@@ -13,19 +20,10 @@ export async function POST(
   const limited = rateLimit({ req, key: "follow", limit: 30, windowMs: 60_000 });
   if (limited) return limited;
   const user = await getCurrentUser();
-  if (!user) {
-    return NextResponse.json(
-      { error: { code: "unauthorized", message: "Connect a wallet first." } },
-      { status: 401 },
-    );
-  }
-  const { handle: id } = await params;
-  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
-    return NextResponse.json(
-      { error: { code: "not_found", message: "That account does not exist." } },
-      { status: 404 },
-    );
-  }
+  if (!user) return unauthorized();
+  const { handle } = await params;
+  if (!isUuid(handle)) return apiError(404, "not_found", "That account does not exist.");
+  const id = handle.toLowerCase();
   if (id === user.id) {
     return NextResponse.json(
       { error: { code: "self_follow", message: "Following yourself does nothing." } },
@@ -33,47 +31,39 @@ export async function POST(
     );
   }
 
-  // Try to unfollow first; if nothing was deleted, follow instead.
-  const removed = await sql`
-    DELETE FROM follows
-    WHERE follower_id = ${user.id} AND following_id = ${id}
-    RETURNING follower_id
-  `;
+  const body = FollowBody.safeParse(await req.json().catch(() => ({})));
   let following: boolean;
-  if (removed.length > 0) {
-    following = false;
-    await sql`
-      UPDATE users SET followers_count = GREATEST(followers_count - 1, 0) WHERE id = ${id}
-    `;
-    await sql`
-      UPDATE users SET following_count = GREATEST(following_count - 1, 0) WHERE id = ${user.id}
-    `;
+  if (body.success && body.data.following !== undefined) {
+    following = body.data.following;
   } else {
-    const added = await sql`
-      INSERT INTO follows (follower_id, following_id)
-      SELECT ${user.id}, ${id}
-      WHERE EXISTS (SELECT 1 FROM users WHERE id = ${id})
-      ON CONFLICT DO NOTHING
-      RETURNING follower_id
+    const existing = await sql`
+      SELECT 1 FROM follows WHERE follower_id = ${user.id} AND following_id = ${id}
     `;
-    if (added.length === 0) {
-      return NextResponse.json(
-        { error: { code: "not_found", message: "That account does not exist." } },
-        { status: 404 },
-      );
-    }
-    following = true;
-    await sql`
-      UPDATE users SET followers_count = followers_count + 1 WHERE id = ${id}
-    `;
-    await sql`
-      UPDATE users SET following_count = following_count + 1 WHERE id = ${user.id}
-    `;
+    following = existing.length === 0;
   }
 
-  const rows = await sql`SELECT followers_count FROM users WHERE id = ${id}`;
-  return NextResponse.json({
-    following,
-    followers: rows[0]?.followers_count ?? 0,
-  });
+  const [, target] = await sql.transaction([
+    following
+      ? sql`
+          INSERT INTO follows (follower_id, following_id)
+          SELECT ${user.id}, ${id}
+          WHERE EXISTS (SELECT 1 FROM users WHERE id = ${id})
+          ON CONFLICT DO NOTHING
+        `
+      : sql`DELETE FROM follows WHERE follower_id = ${user.id} AND following_id = ${id}`,
+    sql`
+      UPDATE users
+      SET followers_count = (SELECT COUNT(*)::int FROM follows WHERE following_id = ${id})
+      WHERE id = ${id}
+      RETURNING followers_count
+    `,
+    sql`
+      UPDATE users
+      SET following_count = (SELECT COUNT(*)::int FROM follows WHERE follower_id = ${user.id})
+      WHERE id = ${user.id}
+    `,
+  ]);
+  const row = (target as { followers_count: number }[])[0];
+  if (!row) return apiError(404, "not_found", "That account does not exist.");
+  return NextResponse.json({ following, followers: Number(row.followers_count) });
 }
