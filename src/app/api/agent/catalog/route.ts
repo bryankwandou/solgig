@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { platformFeeBps, treasuryAddress } from "@/lib/fees";
+import { usdPerSol, usdcMint, USDC_DECIMALS } from "@/lib/solana/usdc";
+import { priceProduct, x402Network } from "@/lib/x402";
+import { CATALOG_SCHEMA_VERSION } from "@/lib/agent-schema";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,7 +21,9 @@ export async function GET() {
   const network = process.env.NEXT_PUBLIC_SOLANA_NETWORK ?? "mainnet-beta";
   // Same parsing, clamping and "no treasury, no fee" rule as the order
   // route, so the advertised fee is the fee actually charged.
-  const feeBps = treasuryAddress() ? Number(platformFeeBps()) : 0;
+  const treasury = treasuryAddress();
+  const feeBps = treasury ? Number(platformFeeBps()) : 0;
+  const rate = await usdPerSol();
 
   const products = await sql`
     SELECT p.id, p.slug, p.title, p.short_description, p.product_type,
@@ -45,20 +50,54 @@ export async function GET() {
   const num = (v: unknown) => (v == null ? null : Number(v));
 
   return NextResponse.json({
+    $schema: `${site}/api/agent/schema`,
+    schema_version: CATALOG_SCHEMA_VERSION,
     marketplace: "SolGig",
+    description:
+      "A store AI agents can buy from on Solana. Every digital product is an x402 resource: GET it, get HTTP 402 with payment terms, pay in SOL or USDC, retry with the signature, receive the file and an on-chain receipt.",
     network,
+    x402_network: x402Network(network),
     escrow_program: process.env.NEXT_PUBLIC_ESCROW_PROGRAM_ID ?? null,
     platform_fee_bps: feeBps,
     currency: "SOL (lamports)",
-    products: products.map((p) => ({
-      ...p,
-      price_lamports: Number(p.price_lamports),
-      rating_average: num(p.rating_average),
-    })),
+    accepted_assets: [
+      { symbol: "SOL", mint: null, decimals: 9 },
+      ...(rate ? [{ symbol: "USDC", mint: usdcMint(network), decimals: USDC_DECIMALS }] : []),
+    ],
+    usd_per_sol: rate,
+    products: products.map((p) => {
+      const prices = priceProduct(p.price_lamports, { treasury, usdPerSol: rate });
+      return {
+        ...p,
+        price_lamports: Number(p.price_lamports),
+        rating_average: num(p.rating_average),
+        prices: {
+          SOL: { amount: prices.sol.gross, decimals: 9 },
+          USDC: prices.usdc ? { amount: prices.usdc.gross, decimals: USDC_DECIMALS } : null,
+        },
+        // Only products with a file can be delivered to a headless buyer.
+        purchase: p.deliverable_file
+          ? { protocol: "x402", method: "GET", url: `${site}/api/agent/products/${p.slug}` }
+          : null,
+      };
+    }),
     services: services.map((s) => ({
       ...s,
       price_lamports: Number(s.price_lamports),
     })),
+    x402: {
+      summary:
+        "Fastest path for agents: no account, no cookie. The paying wallet is the identity.",
+      steps: [
+        `GET ${site}/api/agent/products/<slug>?payer=<your pubkey>  ->  402 with accepts[] (SOL and USDC), each carrying extra.challenge, extra.transfers and ready-to-sign extra.instructions.`,
+        "Sign and send ONE transaction with those instructions. Wait for confirmation.",
+        "Sign the UTF-8 text 'SolGig x402 payment\\nchallenge: <challenge>\\nsignature: <tx signature>' with the same key (ed25519, base58).",
+        `Repeat the GET with header X-PAYMENT: base64(JSON {x402Version:1, scheme:'exact', network, payload:{asset, signature, challenge, payer, proof}}).`,
+        `200 -> {receipt, delivery.fileUrl}; the X-PAYMENT-RESPONSE header carries the same receipt. Re-fetch it any time at ${site}/api/agent/receipts/<signature>.`,
+      ],
+      errors:
+        "A failed or unverifiable payment returns 402 again with `error` explaining why and a fresh challenge. A signature already used for another purchase returns 409.",
+    },
     how_to_transact: {
       summary:
         "Any holder of a Solana keypair — human or agent — can buy here. Authenticate by signing a nonce, open an order, pay the exact on-chain transfer the order specifies, then confirm with the transaction signature. Digital products unlock a download; services hold funds in escrow until you release them.",

@@ -45,29 +45,14 @@ export function checkPayment(
   tx: FetchedTx | null,
   params: Omit<PaymentParams, "signature">,
 ): { ok: boolean; reason?: string } {
-  if (!tx) return { ok: false, reason: "not_found" };
-  if (tx.meta?.err) return { ok: false, reason: "tx_failed" };
-  // Without this, any older transfer from the buyer to the seller for the
-  // same amount (a tip, an off-platform deal) could be claimed as payment.
-  if (params.notBefore && tx.blockTime && tx.blockTime < params.notBefore) {
-    return { ok: false, reason: "tx_predates_order" };
-  }
-
-  const resolved = resolveKeys(tx);
-  if ("error" in resolved) return { ok: false, reason: resolved.error };
-  const { keys, numSigners } = resolved;
+  const base = checkCommon(tx, params);
+  if ("reason" in base) return { ok: false, reason: base.reason };
+  const { tx: landed, keys, buyerIdx } = base;
   const sellerIdx = keys.indexOf(params.seller);
-  const buyerIdx = keys.indexOf(params.buyer);
-  if (sellerIdx < 0 || buyerIdx < 0) {
-    return { ok: false, reason: "party_missing" };
-  }
-  // The buyer must have signed this transaction, not merely appear in it.
-  if (buyerIdx >= numSigners) {
-    return { ok: false, reason: "buyer_not_signer" };
-  }
+  if (sellerIdx < 0) return { ok: false, reason: "party_missing" };
 
-  const pre = tx.meta?.preBalances ?? [];
-  const post = tx.meta?.postBalances ?? [];
+  const pre = landed.meta?.preBalances ?? [];
+  const post = landed.meta?.postBalances ?? [];
   // Without full balance arrays the index arithmetic below means nothing.
   if (pre.length !== keys.length || post.length !== keys.length) {
     return { ok: false, reason: "balances_mismatch" };
@@ -91,6 +76,82 @@ export function checkPayment(
   // (they also pay the network fee, so the drop will exceed it).
   const buyerSpent = (pre[buyerIdx] ?? 0) - (post[buyerIdx] ?? 0);
   if (buyerSpent < params.sellerMinLamports + fee) {
+    return { ok: false, reason: "buyer_underpaid" };
+  }
+  return { ok: true };
+}
+
+/**
+ * The checks every payment shares, SOL or token: the transaction exists,
+ * succeeded, landed after the order was opened, and the buyer signed it.
+ */
+function checkCommon(
+  tx: FetchedTx | null,
+  params: { buyer: string; notBefore?: number },
+): { tx: FetchedTx; keys: string[]; buyerIdx: number } | { reason: string } {
+  if (!tx) return { reason: "not_found" };
+  if (tx.meta?.err) return { reason: "tx_failed" };
+  // Without this, any older transfer from the buyer to the seller for the
+  // same amount (a tip, an off-platform deal) could be claimed as payment.
+  if (params.notBefore && tx.blockTime && tx.blockTime < params.notBefore) {
+    return { reason: "tx_predates_order" };
+  }
+  const resolved = resolveKeys(tx);
+  if ("error" in resolved) return { reason: resolved.error };
+  const { keys, numSigners } = resolved;
+  const buyerIdx = keys.indexOf(params.buyer);
+  if (buyerIdx < 0) return { reason: "party_missing" };
+  // The buyer must have signed this transaction, not merely appear in it.
+  if (buyerIdx >= numSigners) return { reason: "buyer_not_signer" };
+  return { tx, keys, buyerIdx };
+}
+
+export type TokenPaymentParams = {
+  buyer: string;
+  seller: string;
+  /** SPL mint the order is priced in (USDC). */
+  mint: string;
+  /** Smallest units (micro-USDC for USDC). */
+  sellerMinAmount: bigint;
+  treasury?: string | null;
+  feeAmount?: bigint;
+  notBefore?: number;
+};
+
+/**
+ * The SPL-token twin of checkPayment. Token balances are keyed by the owner
+ * of each token account, so this holds whichever account the payer chose to
+ * send to, as long as the seller (and treasury) own it and it is of `mint`.
+ */
+export function checkTokenPayment(
+  tx: FetchedTx | null,
+  params: TokenPaymentParams,
+): { ok: boolean; reason?: string } {
+  const base = checkCommon(tx, params);
+  if ("reason" in base) return { ok: false, reason: base.reason };
+  const meta = base.tx.meta;
+  if (!meta?.preTokenBalances || !meta?.postTokenBalances) {
+    return { ok: false, reason: "balances_mismatch" };
+  }
+  // Net change per owner for this mint, summed across that owner's accounts.
+  const delta = (owner: string) => {
+    let d = 0n;
+    for (const b of meta.postTokenBalances!) {
+      if (b.owner === owner && b.mint === params.mint) d += BigInt(b.uiTokenAmount.amount);
+    }
+    for (const b of meta.preTokenBalances!) {
+      if (b.owner === owner && b.mint === params.mint) d -= BigInt(b.uiTokenAmount.amount);
+    }
+    return d;
+  };
+  if (delta(params.seller) < params.sellerMinAmount) {
+    return { ok: false, reason: "amount_short" };
+  }
+  const fee = params.feeAmount ?? 0n;
+  if (params.treasury && fee > 0n && delta(params.treasury) < fee) {
+    return { ok: false, reason: "fee_missing" };
+  }
+  if (-delta(params.buyer) < params.sellerMinAmount + fee) {
     return { ok: false, reason: "buyer_underpaid" };
   }
   return { ok: true };

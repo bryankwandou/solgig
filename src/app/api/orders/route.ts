@@ -37,7 +37,7 @@ export async function GET() {
     );
   }
   const items = await sql`
-    SELECT o.id, o.order_number, o.order_type, o.status, o.amount_lamports,
+    SELECT o.id, o.order_number, o.order_type, o.status, o.amount_lamports, o.token_mint,
            o.settlement, o.buyer_wallet, o.payment_tx_signature, o.created_at, o.completed_at,
            p.slug AS product_slug,
            COALESCE(p.title, s.title) AS product_title,
