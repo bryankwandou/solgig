@@ -1,0 +1,28 @@
+<section id="flow" data-transition="fade" style="background:#10141B; color:#EDEBE4; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px 128px 160px; display:flex; flex-direction:column; gap:56px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace; font-size:24px; color:#2BD99A; letter-spacing:2px">HOW X402 WORKS HERE</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif; font-size:72px; font-weight:700; line-height:1.05">Nothing ships until the chain agrees.</h2>
+<div style="display:flex; gap:16px; align-items:stretch">
+<div style="flex:1; display:flex; flex-direction:column; gap:12px; background:#1A202A; padding:32px; border-radius:16px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace; font-size:26px; color:#2BD99A">1 · GET</p>
+<p style="font-size:26px; color:#A9B4C2">402 with a signed challenge, 5 min price lock</p>
+</div>
+<x-shape kind="arrow-right" style="width:48px; height:24px; background:#2BD99A; align-self:center"></x-shape>
+<div style="flex:1; display:flex; flex-direction:column; gap:12px; background:#1A202A; padding:32px; border-radius:16px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace; font-size:26px; color:#2BD99A">2 · PAY</p>
+<p style="font-size:26px; color:#A9B4C2">One Solana tx: seller net plus 2.5% fee</p>
+</div>
+<x-shape kind="arrow-right" style="width:48px; height:24px; background:#2BD99A; align-self:center"></x-shape>
+<div style="flex:1; display:flex; flex-direction:column; gap:12px; background:#1A202A; padding:32px; border-radius:16px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace; font-size:26px; color:#2BD99A">3 · RETRY</p>
+<p style="font-size:26px; color:#A9B4C2">X-PAYMENT: signature plus payer's signed proof</p>
+</div>
+<x-shape kind="arrow-right" style="width:48px; height:24px; background:#2BD99A; align-self:center"></x-shape>
+<div style="flex:1; display:flex; flex-direction:column; gap:12px; background:#1A202A; padding:32px; border-radius:16px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace; font-size:26px; color:#2BD99A">4 · 200</p>
+<p style="font-size:26px; color:#A9B4C2">File plus receipt in X-PAYMENT-RESPONSE</p>
+</div>
+</div>
+<p style="font-size:28px; color:#EDEBE4; width:1600px">Before step 4 the server reads the tx from RPC and checks signer, network, time and balance changes (lamports, or USDC by owner and mint). One signature settles one purchase; a reused one gets 409.</p>
+<p style="position:absolute; left:128px; bottom:64px; width:1664px; font-size:24px; color:#A9B4C2">Code: src/lib/x402.ts, src/lib/solana/pay.ts · 11 tests in tests/x402.test.ts · 5</p>
+<aside>Step one returns a challenge signed by the server that fixes the price for five minutes. Step two is a normal Solana transaction. In step three the agent also signs the challenge and the signature with its key, so nobody who merely saw the transaction on-chain can claim the file. Only then does the server check the chain and answer 200.</aside>
+</section>
