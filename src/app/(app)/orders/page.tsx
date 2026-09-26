@@ -18,6 +18,8 @@ type Order = {
   buyer_wallet: string;
   status: string;
   amount_lamports: number;
+  /** 'SOL', or the SPL mint for token orders (amount is then in its base units). */
+  token_mint: string | null;
   payment_tx_signature: string | null;
   created_at: string;
   product_slug: string | null;
@@ -182,7 +184,9 @@ export default function OrdersPage() {
                     {t.status[o.status] ?? o.status}
                   </span>
                   <span className="text-sm font-semibold">
-                    {formatSol(Number(o.amount_lamports))}
+                    {!o.token_mint || o.token_mint === "SOL"
+                      ? formatSol(Number(o.amount_lamports))
+                      : `${parseFloat((Number(o.amount_lamports) / 1e6).toFixed(2))} USDC`}
                   </span>
                   {o.status === "completed" && o.has_file && (
                     <button
