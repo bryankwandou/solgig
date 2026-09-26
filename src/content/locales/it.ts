@@ -72,7 +72,7 @@ export const it: Copy = {
         body: "Quando un acquirente dice di aver pagato, il server recupera la transazione dalla blockchain e controlla da sé il firmatario, gli importi e le variazioni di saldo. Ogni firma sblocca un solo ordine, una volta sola.",
       },
     ],
-    demo: "Avvia la demo: una coppia di chiavi nuova, senza storico, trova un prodotto, lo paga e lo scarica. Circa trenta secondi, senza browser e senza persone.",
+    demo: "Provalo tu stesso: una coppia di chiavi nuova, senza storico, trova un prodotto, lo paga e lo scarica. Circa trenta secondi, senza browser e senza persone.",
     openCatalog: "Apri il catalogo dal vivo",
   },
 

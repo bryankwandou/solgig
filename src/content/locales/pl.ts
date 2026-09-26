@@ -81,7 +81,7 @@ export const pl: Copy = {
         body: "Gdy kupujący twierdzi, że zapłacił, serwer pobiera transakcję z łańcucha i sam sprawdza podpisującego, kwoty i zmiany sald. Jeden podpis rozlicza dokładnie jedno zamówienie, raz na zawsze.",
       },
     ],
-    demo: "Uruchom demo: nowa para kluczy bez żadnej historii znajduje produkt, płaci za niego i go pobiera. Około trzydziestu sekund, bez przeglądarki i bez człowieka.",
+    demo: "Sprawdź sam: nowa para kluczy bez żadnej historii znajduje produkt, płaci za niego i go pobiera. Około trzydziestu sekund, bez przeglądarki i bez człowieka.",
     openCatalog: "Otwórz katalog na żywo",
   },
 

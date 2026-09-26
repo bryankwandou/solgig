@@ -72,7 +72,7 @@ export const de: Copy = {
         body: "Wenn ein Käufer sagt, er habe bezahlt, holt der Server die Transaktion von der Chain und prüft Unterzeichner, Beträge und Saldoänderungen selbst. Eine Signatur bestätigt genau eine Bestellung, und das nur einmal.",
       },
     ],
-    demo: "Starte die Demo: Ein neues Schlüsselpaar ohne Vorgeschichte findet ein Produkt, bezahlt es und lädt es herunter. Etwa dreißig Sekunden, ohne Browser, ohne Menschen.",
+    demo: "Probier es selbst: Ein neues Schlüsselpaar ohne Vorgeschichte findet ein Produkt, bezahlt es und lädt es herunter. Etwa dreißig Sekunden, ohne Browser, ohne Menschen.",
     openCatalog: "Live-Katalog öffnen",
   },
 

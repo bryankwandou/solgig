@@ -57,7 +57,9 @@ export default function FeedPage() {
     }
   }
 
-  useEffect(() => load(), [load]);
+  // Refetch when the viewer changes: liked_by_me depends on who is asking.
+  const viewerId = user?.id ?? null;
+  useEffect(() => load(), [load, viewerId]);
 
   async function publish() {
     if (!text.trim()) return;
@@ -118,7 +120,7 @@ export default function FeedPage() {
         )}
         {posts.map((p, i) => (
           <Reveal key={p.id} dir="up" delay={Math.min(i * 0.04, 0.3)}>
-            <PostCard post={p} canLike={!!user} />
+            <PostCard key={`${p.id}:${viewerId ?? "anon"}:${p.likes_count}`} post={p} canLike={!!user} />
           </Reveal>
         ))}
         {cursor && (
@@ -147,7 +149,7 @@ type Comment = {
 function PostCard({ post, canLike }: { post: Post; canLike: boolean }) {
   const t = useCopy().pages;
   const [likes, setLikes] = useState(Number(post.likes_count));
-  const [liked, setLiked] = useState(!!post.liked_by_me);
+  const [liked, setLiked] = useState(canLike && !!post.liked_by_me);
   const [liking, setLiking] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
