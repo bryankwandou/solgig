@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 // same host.
 export async function GET() {
   const site = process.env.NEXT_PUBLIC_SITE_URL ?? "";
-  const network = process.env.NEXT_PUBLIC_SOLANA_NETWORK ?? "devnet";
+  const network = process.env.NEXT_PUBLIC_SOLANA_NETWORK ?? "mainnet-beta";
   // Same parsing, clamping and "no treasury, no fee" rule as the order
   // route, so the advertised fee is the fee actually charged.
   const feeBps = treasuryAddress() ? Number(platformFeeBps()) : 0;

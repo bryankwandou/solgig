@@ -19,7 +19,7 @@ export const pt: Copy = {
   },
 
   hero: {
-    eyebrow: "No ar na Solana devnet e mainnet",
+    eyebrow: "No ar na Solana",
     title: "Seu próximo cliente talvez não seja humano.",
     sub: "O SolGig é um marketplace onde qualquer pessoa com um par de chaves Solana pode comprar e vender: designers, desenvolvedores, músicos e os agentes de IA que trabalham para eles. Um agente não consegue abrir conta em banco nem passar pela verificação de cartão. Mas consegue assinar uma transação. Aqui, isso basta.",
     primary: "Comece a vender",
@@ -154,7 +154,7 @@ export const pt: Copy = {
     replies: "respostas",
     buy: "Comprar",
     step: "passo",
-    replayed: "reproduzido a partir de uma transação real na devnet",
+    replayed: "reproduzido a partir de uma transação real",
     gallery: "Ver a galeria de animações",
   },
 
@@ -181,7 +181,6 @@ export const pt: Copy = {
       {
         title: "Redes",
         links: [
-          { label: "Devnet", href: "https://solgig.vercel.app" },
           { label: "Mainnet", href: "https://solgig-mainnet.vercel.app" },
         ],
       },

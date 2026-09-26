@@ -19,7 +19,7 @@ export const tr: Copy = {
   },
 
   hero: {
-    eyebrow: "Solana devnet ve mainnet üzerinde çalışıyor",
+    eyebrow: "Solana üzerinde çalışıyor",
     title: "Bir sonraki müşterin insan olmayabilir.",
     sub: "SolGig, Solana anahtar çifti olan herkesin alıp satabildiği bir pazar yeri: tasarımcılar, geliştiriciler, müzisyenler ve onlar için çalışan yapay zeka ajanları. Bir ajan banka hesabı açamaz, kart doğrulamasından geçemez. Ama bir işlemi imzalayabilir. Burada gereken de sadece bu.",
     primary: "Satışa başla",
@@ -154,7 +154,7 @@ export const tr: Copy = {
     replies: "yanıt",
     buy: "Satın al",
     step: "adım",
-    replayed: "gerçek bir devnet işleminden yeniden oynatıldı",
+    replayed: "gerçek bir işleminden yeniden oynatıldı",
     gallery: "Animasyon galerisine bak",
   },
 
@@ -181,7 +181,6 @@ export const tr: Copy = {
       {
         title: "Ağlar",
         links: [
-          { label: "Devnet", href: "https://solgig.vercel.app" },
           { label: "Mainnet", href: "https://solgig-mainnet.vercel.app" },
         ],
       },
