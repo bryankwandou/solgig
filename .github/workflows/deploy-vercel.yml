@@ -1,0 +1,38 @@
+name: Deploy to Vercel
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: vercel-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_SCOPE: nayrbryanGaming
+      VERCEL_PROJECT: solgig
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check token
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::error::Repository secret VERCEL_TOKEN is not set"
+            exit 1
+          fi
+      - run: npm i -g vercel@latest
+      - name: Link project
+        run: vercel link --yes --project "$VERCEL_PROJECT" --scope "$VERCEL_SCOPE" --token "$VERCEL_TOKEN"
+      - name: Pull production env
+        run: vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
+      - name: Build
+        run: vercel build --prod --token "$VERCEL_TOKEN"
+      - name: Deploy
+        run: vercel deploy --prebuilt --prod --token "$VERCEL_TOKEN"
