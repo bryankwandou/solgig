@@ -1,0 +1,19 @@
+{
+  "v": 4,
+  "createdOnFiles": { "v": 1, "at": "2026-09-26T18:25:00Z" },
+  "title": "SolGig Pitch Deck",
+  "order": ["cover", "problem", "solution", "demo", "flow", "market", "traction", "humans", "model", "roadmap", "team", "ask"],
+  "cover": "cover",
+  "sections": {
+    "s1": { "description": "Agents can pay but have nowhere to shop", "start": "cover" },
+    "s2": { "description": "SolGig turns every product into an HTTP 402 resource", "start": "solution" },
+    "s3": { "description": "Rails exist, the storefront does not, and SolGig already ships", "start": "market" },
+    "s4": { "description": "How it earns, what comes next, who builds it, what we ask", "start": "model" }
+  },
+  "faces": {
+    "space-grotesk": { "family": "Space Grotesk", "href": "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400..700&display=swap" },
+    "ibm-plex-sans": { "family": "IBM Plex Sans", "href": "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&display=swap" },
+    "jetbrains-mono": { "family": "JetBrains Mono", "href": "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" }
+  },
+  "designSystems": []
+}

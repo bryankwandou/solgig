@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SolGig Pitch Deck</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400..700&family=IBM+Plex+Sans:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+*{box-sizing:border-box;margin:0}
+html,body{background:#0B0E13;height:100%}
+.slide{position:relative;width:1920px;height:1080px;overflow:hidden;transform-origin:0 0}
+.slide aside{display:none}
+.slide ul,.slide ol{padding-left:1.2em}
+table{border-collapse:collapse;width:100%}
+th,td{text-align:left;padding:14px 16px;border-bottom:1px solid #D9D5CA;vertical-align:top}
+th{font-weight:600}
+.frame{position:relative;margin:0 auto 24px;overflow:hidden}
+@media print{@page{size:1920px 1080px;margin:0} html,body{background:none} .frame{margin:0;width:1920px!important;height:1080px!important;page-break-after:always} .slide{transform:none!important}}
+</style></head><body>
+<div class="frame"><section class="slide" id="cover" data-transition="fade" style="background:#10141B; color:#EDEBE4; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px; display:flex; flex-direction:column; justify-content:center; gap:40px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace; font-size:28px; color:#2BD99A; letter-spacing:2px">HTTP/1.1 402 PAYMENT REQUIRED</p>
+<h1 style="font-family:'Space Grotesk', Arial, sans-serif; font-size:160px; font-weight:700; line-height:1; letter-spacing:-4px">SolGig</h1>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif; font-size:72px; font-weight:500; line-height:1.1; color:#EDEBE4; width:1400px">The store AI agents buy from, on Solana.</h2>
+<p style="font-size:32px; color:#A9B4C2; width:1300px">Ask for a product, get a price in SOL or USDC, pay, ask again. The file comes back with an on-chain receipt.</p>
+<p style="position:absolute; left:128px; bottom:64px; width:1664px; font-size:24px; color:#A9B4C2">solgig-mainnet.vercel.app · github.com/bryankwandou/solgig</p>
+<aside>SolGig is a store built for AI agents. An agent asks for a product and gets HTTP 402 with a price. It pays on Solana, asks again, and leaves with the file and a receipt anyone can check on-chain.</aside>
+</section>
+</div>
+<div class="frame"><section class="slide" id="problem" data-transition="fade" style="background:#F3F1EA; color:#10141B; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px 128px 160px; display:flex; flex-direction:column; gap:64px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace; font-size:24px; color:#0B7A55; letter-spacing:2px">THE PROBLEM</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif; font-size:80px; font-weight:700; line-height:1.05; width:1500px">Agents can pay now. They have nowhere to shop.</h2>
+<div style="display:flex; gap:32px">
+<div style="flex:1; display:flex; flex-direction:column; gap:16px; background:#FBFAF6; padding:40px; border:1px solid #D9D5CA; border-radius:16px">
+<h3 style="font-size:36px; font-weight:600">No card, no bank</h3>
+<p style="font-size:28px; color:#4A5360">An agent cannot pass KYC or a card check. It can sign a Solana transaction.</p>
+</div>
+<div style="flex:1; display:flex; flex-direction:column; gap:16px; background:#FBFAF6; padding:40px; border:1px solid #D9D5CA; border-radius:16px">
+<h3 style="font-size:36px; font-weight:600">Rails, not shelves</h3>
+<p style="font-size:28px; color:#4A5360">x402 tools on Solana charge for API calls. None of them list goods from many sellers.</p>
+</div>
+<div style="flex:1; display:flex; flex-direction:column; gap:16px; background:#FBFAF6; padding:40px; border:1px solid #D9D5CA; border-radius:16px">
+<h3 style="font-size:36px; font-weight:600">Stores assume a browser</h3>
+<p style="font-size:28px; color:#4A5360">Checkout pages, cookies and captchas block a buyer that is a script.</p>
+</div>
+</div>
+<p style="position:absolute; left:128px; bottom:64px; width:1664px; font-size:24px; color:#4A5360">Source: Colosseum Copilot project search, 26 Sep 2026 · 2</p>
+<aside>Agents already hold wallets and can pay. What they lack is somewhere to buy things. On Solana, the x402 projects we found are payment rails for API calls. None of them is a catalog of goods from many sellers. And ordinary stores are built for a person in a browser.</aside>
+</section>
+</div>
+<div class="frame"><section class="slide" id="solution" data-transition="fade" style="background:#10141B; color:#EDEBE4; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px 128px 160px; display:flex; flex-direction:column; gap:64px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace; font-size:24px; color:#2BD99A; letter-spacing:2px">THE SOLUTION</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif; font-size:80px; font-weight:700; line-height:1.05; width:1550px">Every SolGig product answers HTTP 402 with a price.</h2>
+<div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:32px">
+<div style="display:flex; flex-direction:column; gap:16px; background:#1A202A; padding:40px; border-radius:16px; border-top:4px solid #2BD99A">
+<h3 style="font-size:36px; font-weight:600">Catalog for machines</h3>
+<p style="font-size:28px; color:#A9B4C2">One JSON endpoint lists every product, price and purchase URL, with a JSON Schema.</p>
+</div>
+<div style="display:flex; flex-direction:column; gap:16px; background:#1A202A; padding:40px; border-radius:16px; border-top:4px solid #2BD99A">
+<h3 style="font-size:36px; font-weight:600">SOL or USDC</h3>
+<p style="font-size:28px; color:#A9B4C2">The 402 lists both, with exact transfers and instructions ready to sign.</p>
+</div>
+<div style="display:flex; flex-direction:column; gap:16px; background:#1A202A; padding:40px; border-radius:16px; border-top:4px solid #2BD99A">
+<h3 style="font-size:36px; font-weight:600">Receipt on-chain</h3>
+<p style="font-size:28px; color:#A9B4C2">The answer carries the transaction signature. Anyone can check the purchase.</p>
+</div>
+</div>
+<p style="position:absolute; left:128px; bottom:64px; width:1664px; font-size:24px; color:#A9B4C2">No account, no SDK, no API key · 3</p>
+<aside>The fix is to treat each product as an x402 resource. The catalog tells an agent what exists. The 402 tells it the price in SOL or USDC and exactly what to send. The success response carries a receipt tied to the transaction signature.</aside>
+</section>
+</div>
+<div class="frame"><section class="slide" id="demo" data-transition="fade" style="background:#F3F1EA; color:#10141B; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px 128px 160px; display:flex; flex-direction:column; gap:48px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace; font-size:24px; color:#0B7A55; letter-spacing:2px">DEMO</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif; font-size:72px; font-weight:700; line-height:1.05">A fresh keypair buys a file in two requests.</h2>
+<div style="display:flex; gap:48px; align-items:start">
+<img src="assets/agents.png" alt="SolGig landing page, For agents section: three feature cards and a terminal replaying an agent purchase" style="width:1000px; height:562px; object-fit:contain; background:#FBFAF6; border:1px solid #D9D5CA; border-radius:16px">
+<ol style="flex:1; font-size:30px; line-height:1.5; color:#10141B">
+<li>GET the product, receive 402</li>
+<li>Sign the listed transfers</li>
+<li>GET again with X-PAYMENT</li>
+<li>Receive file and receipt</li>
+</ol>
+</div>
+<p style="position:absolute; left:128px; bottom:64px; width:1664px; font-size:24px; color:#4A5360">Video: pitch/demo.mp4 · client: scripts/agent-x402.mjs · 4</p>
+<aside>This is the page an agent owner sees. The agent itself only makes two HTTP requests with a payment in between. The demo video shows the full run.</aside>
+</section>
+</div>
+<div class="frame"><section class="slide" id="flow" data-transition="fade" style="background:#10141B; color:#EDEBE4; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px 128px 160px; display:flex; flex-direction:column; gap:56px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace; font-size:24px; color:#2BD99A; letter-spacing:2px">HOW X402 WORKS HERE</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif; font-size:72px; font-weight:700; line-height:1.05">Nothing ships until the chain agrees.</h2>
+<div style="display:flex; gap:16px; align-items:stretch">
+<div style="flex:1; display:flex; flex-direction:column; gap:12px; background:#1A202A; padding:32px; border-radius:16px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace; font-size:26px; color:#2BD99A">1 · GET</p>
+<p style="font-size:26px; color:#A9B4C2">402 with a signed challenge, 5 min price lock</p>
+</div>
+<p style="font-size:48px; color:#2BD99A; align-self:center">&#8594;</p>
+<div style="flex:1; display:flex; flex-direction:column; gap:12px; background:#1A202A; padding:32px; border-radius:16px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace; font-size:26px; color:#2BD99A">2 · PAY</p>
+<p style="font-size:26px; color:#A9B4C2">One Solana tx: seller net plus 2.5% fee</p>
+</div>
+<p style="font-size:48px; color:#2BD99A; align-self:center">&#8594;</p>
+<div style="flex:1; display:flex; flex-direction:column; gap:12px; background:#1A202A; padding:32px; border-radius:16px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace; font-size:26px; color:#2BD99A">3 · RETRY</p>
+<p style="font-size:26px; color:#A9B4C2">X-PAYMENT: signature plus payer's signed proof</p>
+</div>
+<p style="font-size:48px; color:#2BD99A; align-self:center">&#8594;</p>
+<div style="flex:1; display:flex; flex-direction:column; gap:12px; background:#1A202A; padding:32px; border-radius:16px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace; font-size:26px; color:#2BD99A">4 · 200</p>
+<p style="font-size:26px; color:#A9B4C2">File plus receipt in X-PAYMENT-RESPONSE</p>
+</div>
+</div>
+<p style="font-size:28px; color:#EDEBE4; width:1600px">Before step 4 the server reads the tx from RPC and checks signer, network, time and balance changes (lamports, or USDC by owner and mint). One signature settles one purchase; a reused one gets 409.</p>
+<p style="position:absolute; left:128px; bottom:64px; width:1664px; font-size:24px; color:#A9B4C2">Code: src/lib/x402.ts, src/lib/solana/pay.ts · 11 tests in tests/x402.test.ts · 5</p>
+<aside>Step one returns a challenge signed by the server that fixes the price for five minutes. Step two is a normal Solana transaction. In step three the agent also signs the challenge and the signature with its key, so nobody who merely saw the transaction on-chain can claim the file. Only then does the server check the chain and answer 200.</aside>
+</section>
+</div>
+<div class="frame"><section class="slide" id="market" data-transition="fade" style="background:#F3F1EA; color:#10141B; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px 128px 160px; display:flex; flex-direction:column; gap:48px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace; font-size:24px; color:#0B7A55; letter-spacing:2px">MARKET AND COMPETITORS</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif; font-size:72px; font-weight:700; line-height:1.05">Payment rails exist. The storefront on top does not.</h2>
+<table style="font-size:26px; color:#10141B">
+<tr><th style="width:26%">Project</th><th style="width:44%">What it does</th><th style="width:30%">Gap SolGig fills</th></tr>
+<tr><td>MCPay, Corbits (prize winners)</td><td>Charge agents per API or MCP call over 402</td><td>No goods, no seller catalog</td></tr>
+<tr><td>Latinum (prize winner)</td><td>Wallet and middleware for MCP payments</td><td>Pays, does not sell</td></tr>
+<tr><td>x402 SDK for Solana</td><td>Library for 402 micropayments</td><td>Tooling, not a store</td></tr>
+<tr><td>Tedix</td><td>Agent buys via MCP and x402</td><td>Closest match; the one to watch</td></tr>
+<tr><td>HiveHub, CredChain, SolancePRo</td><td>Freelance marketplaces with escrow</td><td>Human buyers only</td></tr>
+</table>
+<p style="position:absolute; left:128px; bottom:64px; width:1664px; font-size:24px; color:#4A5360">Source: Colosseum Copilot project search (Cypherpunk, Breakout, Radar, Renaissance), 26 Sep 2026 · 6</p>
+<aside>We searched past Colosseum hackathons with Copilot. The prize winners in this space, MCPay, Corbits and Latinum, are rails that let agents pay for API calls. Freelance escrow marketplaces exist but serve people. Tedix is closest to us. No one we found runs a headless merchant catalog where many sellers list goods for agents. We have not checked Tedix beyond its public description, so the slide calls it the closest match rather than claiming a gap.</aside>
+</section>
+</div>
+<div class="frame"><section class="slide" id="traction" data-transition="fade" style="background:#10141B; color:#EDEBE4; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px 128px 160px; display:flex; flex-direction:column; gap:64px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace; font-size:24px; color:#2BD99A; letter-spacing:2px">EXECUTION</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif; font-size:72px; font-weight:700; line-height:1.05">Already live on mainnet, in twenty languages.</h2>
+<div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:32px">
+<div style="display:flex; flex-direction:column; gap:8px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif; font-size:120px; font-weight:700; color:#2BD99A; line-height:1">2</p>
+<p style="font-size:28px; color:#A9B4C2">live deployments: mainnet and devnet</p>
+</div>
+<div style="display:flex; flex-direction:column; gap:8px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif; font-size:120px; font-weight:700; color:#2BD99A; line-height:1">20</p>
+<p style="font-size:28px; color:#A9B4C2">UI languages</p>
+</div>
+<div style="display:flex; flex-direction:column; gap:8px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif; font-size:120px; font-weight:700; color:#2BD99A; line-height:1">14 KB</p>
+<p style="font-size:28px; color:#A9B4C2">Pinocchio escrow program, 24 end-to-end tests</p>
+</div>
+<div style="display:flex; flex-direction:column; gap:8px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif; font-size:120px; font-weight:700; color:#2BD99A; line-height:1">69</p>
+<p style="font-size:28px; color:#A9B4C2">web tests passing, x402 flow included</p>
+</div>
+</div>
+<p style="position:absolute; left:128px; bottom:64px; width:1664px; font-size:24px; color:#A9B4C2">Source: repo README, programs/solgig-escrow/README.md, npx vitest run · users and revenue: [add real numbers] · 7</p>
+<aside>This is shipped code, not a mockup. Two deployments, twenty languages, an escrow program written in Pinocchio at about 14 kilobytes with 24 end-to-end tests, and 69 web tests. We have not put user or revenue numbers here because we have not measured them yet; fill them in before presenting.</aside>
+</section>
+</div>
+<div class="frame"><section class="slide" id="humans" data-transition="fade" style="background:#F3F1EA; color:#10141B; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px 128px 160px; display:flex; flex-direction:column; gap:48px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace; font-size:24px; color:#0B7A55; letter-spacing:2px">FOR PEOPLE TOO</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif; font-size:72px; font-weight:700; line-height:1.05">People buy the same listings, with escrow for services.</h2>
+<div style="display:flex; gap:48px; align-items:start">
+<img src="assets/hero.png" alt="SolGig landing page hero: Your next customer might not be human" style="width:1000px; height:562px; object-fit:contain; background:#FBFAF6; border:1px solid #D9D5CA; border-radius:16px">
+<ul style="flex:1; font-size:30px; line-height:1.5">
+<li>Wallet sign-in, no password</li>
+<li>Service money held in a program PDA</li>
+<li>Buyer releases, or reclaims after 14 days</li>
+<li>Feed, follows and reviews</li>
+</ul>
+</div>
+<p style="position:absolute; left:128px; bottom:64px; width:1664px; font-size:24px; color:#4A5360">Every seller is visible to agents and people with no extra work · 8</p>
+<aside>Human buyers are the supporting side. They see the same listings in a normal storefront. Services settle through the escrow program: money sits in a program-owned account until the buyer releases it, or the buyer takes it back after fourteen days.</aside>
+</section>
+</div>
+<div class="frame"><section class="slide" id="model" data-transition="fade" style="background:#2BD99A; color:#10141B; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px 128px 160px; display:flex; flex-direction:column; justify-content:center; gap:40px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace; font-size:24px; color:#10141B; letter-spacing:2px">BUSINESS MODEL</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif; font-size:280px; font-weight:700; line-height:0.95; letter-spacing:-8px">2.5%</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif; font-size:64px; font-weight:700; line-height:1.1; width:1500px">of every sale, taken in the same transaction.</h2>
+<p style="font-size:32px; width:1500px">A 1 SOL sale sends 0.975 SOL to the seller and 0.025 SOL to the treasury in one transfer. No invoicing, no payout run. Same split for USDC.</p>
+<p style="position:absolute; left:128px; bottom:64px; width:1664px; font-size:24px; color:#10141B">Fee logic: splitAmount in src/lib/fees.ts · 9</p>
+<aside>We earn two and a half percent per sale. It is part of the payment transaction itself, so there is no invoice and no payout to run. The seller keeps ninety-seven and a half percent.</aside>
+</section>
+</div>
+<div class="frame"><section class="slide" id="roadmap" data-transition="fade" style="background:#10141B; color:#EDEBE4; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px 128px 160px; display:flex; flex-direction:column; gap:64px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace; font-size:24px; color:#2BD99A; letter-spacing:2px">ROADMAP</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif; font-size:72px; font-weight:700; line-height:1.05">Next: escrowed services over x402, then agent budgets.</h2>
+<div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:24px">
+<div style="display:flex; flex-direction:column; gap:12px; border-top:4px solid #2BD99A; padding:32px 0px 0px 0px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace; font-size:24px; color:#2BD99A">NOW</p>
+<h3 style="font-size:34px; font-weight:600">x402 goods</h3>
+<p style="font-size:26px; color:#A9B4C2">SOL and USDC, receipts (PR #4)</p>
+</div>
+<div style="display:flex; flex-direction:column; gap:12px; border-top:4px solid #4A5360; padding:32px 0px 0px 0px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace; font-size:24px; color:#A9B4C2">NEXT</p>
+<h3 style="font-size:34px; font-weight:600">x402 services</h3>
+<p style="font-size:26px; color:#A9B4C2">402 that opens a program escrow</p>
+</div>
+<div style="display:flex; flex-direction:column; gap:12px; border-top:4px solid #4A5360; padding:32px 0px 0px 0px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace; font-size:24px; color:#A9B4C2">THEN</p>
+<h3 style="font-size:34px; font-weight:600">Agent budgets</h3>
+<p style="font-size:26px; color:#A9B4C2">Spending caps and allow-lists</p>
+</div>
+<div style="display:flex; flex-direction:column; gap:12px; border-top:4px solid #4A5360; padding:32px 0px 0px 0px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace; font-size:24px; color:#A9B4C2">LATER</p>
+<h3 style="font-size:34px; font-weight:600">MCP server</h3>
+<p style="font-size:26px; color:#A9B4C2">SolGig as a tool in agent frameworks</p>
+</div>
+</div>
+<p style="position:absolute; left:128px; bottom:64px; width:1664px; font-size:24px; color:#A9B4C2">Dates: [set by team] · 10</p>
+<aside>Goods over x402 are done. Next is the same flow for services, where the 402 opens an escrow instead of paying the seller. After that, spending caps an owner can set for an agent, and an MCP server so agent frameworks can use SolGig directly.</aside>
+</section>
+</div>
+<div class="frame"><section class="slide" id="team" data-transition="fade" style="background:#F3F1EA; color:#10141B; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px 128px 160px; display:flex; flex-direction:column; gap:64px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace; font-size:24px; color:#0B7A55; letter-spacing:2px">TEAM</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif; font-size:72px; font-weight:700; line-height:1.05">One builder shipped the app, program and agent API.</h2>
+<div style="display:flex; gap:32px">
+<div style="flex:1; display:flex; flex-direction:column; gap:16px; background:#FBFAF6; padding:48px; border:1px solid #D9D5CA; border-radius:16px">
+<h3 style="font-size:44px; font-weight:600">Bryan Kwandou</h3>
+<p style="font-size:28px; color:#4A5360">[Role and background]</p>
+<p style="font-size:28px; color:#4A5360">github.com/bryankwandou</p>
+</div>
+<div style="flex:1; display:flex; flex-direction:column; gap:16px; background:#FBFAF6; padding:48px; border:1px dashed #9A958A; border-radius:16px">
+<h3 style="font-size:44px; font-weight:600">[Teammate]</h3>
+<p style="font-size:28px; color:#4A5360">[Role and background, or remove this card]</p>
+</div>
+</div>
+<p style="position:absolute; left:128px; bottom:64px; width:1664px; font-size:24px; color:#4A5360">Fill in before presenting · 11</p>
+<aside>Replace the placeholders with real names and backgrounds. If the team is one person, delete the second card and change the headline only if it is no longer true.</aside>
+</section>
+</div>
+<div class="frame"><section class="slide" id="ask" data-transition="fade" style="background:#10141B; color:#EDEBE4; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px 128px 160px; display:flex; flex-direction:column; justify-content:center; gap:48px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace; font-size:24px; color:#2BD99A; letter-spacing:2px">THE ASK</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif; font-size:88px; font-weight:700; line-height:1.05; width:1600px">Help us put the first agent store in every agent framework.</h2>
+<ul style="font-size:32px; line-height:1.6; color:#A9B4C2; width:1500px">
+<li>[Funding amount] for 6 months of build and audits</li>
+<li>Intros to agent framework teams and x402 facilitators</li>
+<li>Sellers with digital goods agents already need</li>
+</ul>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace; font-size:30px; color:#2BD99A">curl -i solgig-mainnet.vercel.app/api/agent/catalog</p>
+<p style="position:absolute; left:128px; bottom:64px; width:1664px; font-size:24px; color:#A9B4C2">github.com/bryankwandou/solgig · 12</p>
+<aside>Three asks. Funding, with the amount still to be set. Introductions to agent framework teams and x402 facilitators. And sellers who have files agents already want. The last line on the slide is a command anyone can run to see the catalog.</aside>
+</section>
+</div>
+<script>
+function fit(){const w=Math.min(window.innerWidth-32,1920),k=w/1920;document.querySelectorAll('.frame').forEach(f=>{f.style.width=w+'px';f.style.height=1080*k+'px';f.firstElementChild.style.transform='scale('+k+')'})}
+if(!matchMedia('print').matches){addEventListener('resize',fit);fit()}
+</script></body></html>

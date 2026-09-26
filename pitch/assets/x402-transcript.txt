@@ -1,0 +1,15 @@
+$ node agent.mjs agent-prompt-pack USDC
+[agent]   wallet A529eh…3FKb, no account, no cookie
+[http]    GET /api/agent/products/agent-prompt-pack
+[http]    402 Payment Required
+[402]     1 SOL on solana-devnet, 2 instructions ready to sign
+[402]     150 USDC on solana-devnet, 4 instructions ready to sign
+[402]     split: 146.25 USDC to 6rxn… + 3.75 USDC to Aqgn…
+[pay]     1 tx, 4 instructions, signature 5YN6hsnnpg…
+[proof]   agent key signs challenge + signature
+[http]    GET /api/agent/products/agent-prompt-pack  X-PAYMENT: eyJ4NDAy…
+[http]    200 OK
+[file]    https://files.example/pack.zip
+[receipt] solgig.receipt/v1  SG-2026-000001  150 USDC, fee 3.75
+[receipt] tx 5YN6hsnnpgehSLBB…  X-PAYMENT-RESPONSE: set
+[replay]  other wallet reuses the signature -> 409 Conflict
