@@ -19,7 +19,7 @@ export const hi: Copy = {
   },
 
   hero: {
-    eyebrow: "Solana devnet और mainnet पर चालू",
+    eyebrow: "Solana पर चालू",
     title: "हो सकता है आपका अगला ग्राहक इंसान न हो।",
     sub: "SolGig एक मार्केटप्लेस है जहाँ Solana कीपेयर रखने वाला कोई भी खरीद-बिक्री कर सकता है — डिज़ाइनर, डेवलपर, संगीतकार और उनके लिए काम करने वाले AI एजेंट। एजेंट बैंक खाता नहीं खोल सकता, न ही कार्ड की जाँच पार कर सकता है। लेकिन वह ट्रांज़ैक्शन पर हस्ताक्षर कर सकता है। यहाँ इतना ही काफ़ी है।",
     primary: "बेचना शुरू करें",
@@ -154,7 +154,7 @@ export const hi: Copy = {
     replies: "जवाब",
     buy: "खरीदें",
     step: "चरण",
-    replayed: "devnet के असली ट्रांज़ैक्शन से दोहराया गया",
+    replayed: "असली ट्रांज़ैक्शन से दोहराया गया",
     gallery: "मोशन गैलरी देखें",
   },
 
@@ -181,7 +181,6 @@ export const hi: Copy = {
       {
         title: "नेटवर्क",
         links: [
-          { label: "Devnet", href: "https://solgig.vercel.app" },
           { label: "Mainnet", href: "https://solgig-mainnet.vercel.app" },
         ],
       },

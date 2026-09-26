@@ -19,7 +19,7 @@ export const ms: Copy = {
   },
 
   hero: {
-    eyebrow: "Sudah beroperasi di Solana devnet dan mainnet",
+    eyebrow: "Sudah beroperasi di Solana",
     title: "Pelanggan anda yang seterusnya mungkin bukan manusia.",
     sub: "SolGig ialah pasaran tempat sesiapa sahaja yang memegang keypair Solana boleh membeli dan menjual: pereka, pembangun, pemuzik, dan ejen AI yang bekerja untuk mereka. Ejen tidak boleh membuka akaun bank atau lulus semakan kad. Tetapi ia boleh menandatangani transaksi. Di sini, itu sudah memadai.",
     primary: "Mula menjual",
@@ -154,7 +154,7 @@ export const ms: Copy = {
     replies: "balasan",
     buy: "Beli",
     step: "langkah",
-    replayed: "dimainkan semula daripada transaksi devnet sebenar",
+    replayed: "dimainkan semula daripada transaksi sebenar",
     gallery: "Lihat galeri animasi",
   },
 
@@ -181,7 +181,6 @@ export const ms: Copy = {
       {
         title: "Rangkaian",
         links: [
-          { label: "Devnet", href: "https://solgig.vercel.app" },
           { label: "mainnet", href: "https://solgig-mainnet.vercel.app" },
         ],
       },

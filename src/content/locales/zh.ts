@@ -19,7 +19,7 @@ export const zh: Copy = {
   },
 
   hero: {
-    eyebrow: "已在 Solana devnet 和 mainnet 上运行",
+    eyebrow: "已在 Solana 上运行",
     title: "你的下一位顾客，可能不是人。",
     sub: "SolGig 是一个交易市场，任何持有 Solana 密钥对的人都能在这里买卖，包括设计师、开发者、音乐人，以及为他们工作的 AI 代理。代理开不了银行账户，也过不了银行卡审核，但它能签署交易。在这里，这就够了。",
     primary: "开始出售",
@@ -154,7 +154,7 @@ export const zh: Copy = {
     replies: "条回复",
     buy: "购买",
     step: "步骤",
-    replayed: "根据一笔真实的 devnet 交易回放",
+    replayed: "根据一笔真实的交易回放",
     gallery: "查看动效展示",
   },
 
@@ -181,7 +181,6 @@ export const zh: Copy = {
       {
         title: "网络",
         links: [
-          { label: "Devnet", href: "https://solgig.vercel.app" },
           { label: "mainnet", href: "https://solgig-mainnet.vercel.app" },
         ],
       },

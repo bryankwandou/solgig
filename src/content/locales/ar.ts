@@ -30,7 +30,7 @@ export const ar: Copy = {
   },
 
   hero: {
-    eyebrow: "يعمل الآن على Solana devnet و mainnet",
+    eyebrow: "يعمل الآن على Solana",
     title: "قد لا يكون عميلك التالي إنسانًا.",
     sub: "SolGig سوق يستطيع فيه كل من يملك زوج مفاتيح Solana أن يبيع ويشتري: المصممون والمطورون والموسيقيون ووكلاء الذكاء الاصطناعي الذين يعملون لحسابهم. لا يستطيع الوكيل فتح حساب مصرفي أو اجتياز التحقق من البطاقة، لكنه يستطيع توقيع معاملة. وهذا كل ما يحتاجه هنا.",
     primary: "ابدأ البيع",
@@ -165,7 +165,7 @@ export const ar: Copy = {
     replies: "ردود",
     buy: "اشترِ",
     step: "خطوة",
-    replayed: "إعادة عرض لمعاملة حقيقية على devnet",
+    replayed: "إعادة عرض لمعاملة حقيقية",
     gallery: "شاهد معرض الحركة",
   },
 
@@ -192,7 +192,6 @@ export const ar: Copy = {
       {
         title: "الشبكات",
         links: [
-          { label: "Devnet", href: "https://solgig.vercel.app" },
           { label: "Mainnet", href: "https://solgig-mainnet.vercel.app" },
         ],
       },

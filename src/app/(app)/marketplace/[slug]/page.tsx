@@ -313,7 +313,7 @@ function Success({
   const [body, setBody] = useState("");
   const [sent, setSent] = useState(false);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
-  const net = process.env.NEXT_PUBLIC_SOLANA_NETWORK ?? "devnet";
+  const net = process.env.NEXT_PUBLIC_SOLANA_NETWORK ?? "mainnet-beta";
 
   // The file link comes from the entitlement-checked endpoint, so only
   // a buyer with a completed order ever sees it.
