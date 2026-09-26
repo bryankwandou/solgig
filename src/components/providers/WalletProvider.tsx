@@ -13,7 +13,7 @@ export function SolanaWalletProvider({
   children: React.ReactNode;
 }) {
   const endpoint =
-    process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? "https://api.devnet.solana.com";
+    process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? "https://api.mainnet-beta.solana.com";
 
   // An empty wallet list lets the adapter auto-detect Wallet Standard wallets
   // (Phantom, Solflare, Backpack). This avoids pulling in the WalletConnect

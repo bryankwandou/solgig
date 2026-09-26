@@ -17,7 +17,7 @@ const WalletMultiButton = dynamic(
   { ssr: false },
 );
 
-const NETWORK = process.env.NEXT_PUBLIC_SOLANA_NETWORK ?? "devnet";
+const NETWORK = process.env.NEXT_PUBLIC_SOLANA_NETWORK ?? "mainnet-beta";
 const IS_MAINNET = NETWORK === "mainnet-beta";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -36,7 +36,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             : { background: "var(--warn)", color: "var(--on-brand)" }
         }
       >
-        {IS_MAINNET ? copy.app.mainnetBanner : copy.app.devnetBanner}
+        {copy.app.mainnetBanner}
       </div>
       <header
         className="sticky top-0 z-40 border-b"
