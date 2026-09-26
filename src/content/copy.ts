@@ -8,7 +8,7 @@
 export const en = {
   brand: {
     name: "SolGig",
-    tagline: "The marketplace both people and AI agents can buy from.",
+    tagline: "The store AI agents buy from, on Solana.",
   },
 
   nav: {
@@ -26,7 +26,7 @@ export const en = {
   hero: {
     eyebrow: "Live on Solana",
     title: "Your next customer might not be human.",
-    sub: "SolGig is a marketplace where anyone holding a Solana keypair can buy and sell — designers, developers, musicians, and the AI agents working for them. An agent can't open a bank account or pass card checks. It can sign a transaction. That's all it needs here.",
+    sub: "SolGig is a store AI agents can buy from. Every product answers with HTTP 402 and a price in SOL or USDC; the agent pays, retries, and walks away with the file and an on-chain receipt. An agent can't open a bank account or pass card checks. It can sign a transaction. That's all it needs here. People shop and hire here too, with escrow on every service.",
     primary: "Start selling",
     secondary: "See the agent buy something",
     statFee: "Platform fee, nothing hidden",
@@ -45,7 +45,7 @@ export const en = {
       {
         k: "01",
         title: "List what you make",
-        body: "Upload a file or describe a service. Set your price in SOL. Your listing goes into the human storefront and the machine-readable catalog at the same time.",
+        body: "Upload a file or describe a service. Set your price in SOL; buyers can pay in SOL or USDC. Your listing goes into the machine-readable catalog and the human storefront at the same time.",
       },
       {
         k: "02",
@@ -62,19 +62,19 @@ export const en = {
 
   agents: {
     title: "Built so a machine can be a customer",
-    sub: "One public endpoint describes every listing and the exact steps to authenticate, pay, and collect. No SDK to install, no API key to beg for.",
+    sub: "Every product is an x402 resource. Ask for it, get told the price, pay, ask again, get the file. No account, no SDK, no API key to beg for.",
     points: [
       {
-        title: "Sign in with a keypair",
-        body: "Auth is a signed nonce. If you can sign a Solana message, you have an account. That covers every wallet — and every agent.",
+        title: "HTTP 402, paid in SOL or USDC",
+        body: "GET /api/agent/products/<slug> answers 402 Payment Required with the exact transfers, even ready-to-sign instructions. Pay, retry with the signature in X-PAYMENT, and the file comes back. The wallet that paid is the account.",
       },
       {
-        title: "Self-describing catalog",
-        body: "GET /api/agent/catalog returns every product and service with prices, plus the full recipe for the purchase flow. An agent that has never seen SolGig can complete a purchase from that one response.",
+        title: "A catalog written for machines",
+        body: "GET /api/agent/catalog lists every product with prices in both SOL and USDC, a purchase URL, and a JSON Schema at /api/agent/schema. An agent that has never seen SolGig can buy from that one response.",
       },
       {
-        title: "Nothing taken on trust",
-        body: "When a buyer says it paid, the server pulls the transaction from the chain and checks the signer, the amounts, and the balance changes itself. A signature clears exactly one order, ever.",
+        title: "A receipt the chain backs up",
+        body: "The server pulls the payment from the chain and checks signer, amounts and fee itself. The receipt it hands back carries the transaction signature, so anyone can verify the purchase. A signature clears exactly one order, ever.",
       },
     ],
     demo: "Try it yourself: a fresh keypair with no history discovers a product, pays for it, and downloads it. About thirty seconds, no browser, no human.",
@@ -147,7 +147,7 @@ export const en = {
   },
 
   finalCta: {
-    title: "The first marketplace your agent can shop at",
+    title: "The first store built for your agent to shop at",
     sub: "List something today. You might not meet your next buyer, because your next buyer might be a script with a keypair and a budget.",
     primary: "Start selling",
     secondary: "Read the agent catalog",
@@ -391,7 +391,7 @@ export type Copy = typeof en;
 export const id: Copy = {
   brand: {
     name: "SolGig",
-    tagline: "Marketplace tempat manusia dan agen AI sama-sama bisa belanja.",
+    tagline: "Toko untuk agen AI, di Solana.",
   },
 
   nav: {
@@ -409,7 +409,7 @@ export const id: Copy = {
   hero: {
     eyebrow: "Sudah jalan di Solana",
     title: "Pembeli berikutnya mungkin bukan manusia.",
-    sub: "SolGig adalah marketplace untuk siapa saja yang punya keypair Solana — desainer, developer, musisi, dan agen AI yang bekerja untuk mereka. Agen tidak bisa buka rekening bank atau lolos cek kartu kredit. Tapi agen bisa menandatangani transaksi, dan di sini itu sudah cukup.",
+    sub: "SolGig adalah toko tempat agen AI berbelanja. Setiap produk menjawab dengan HTTP 402 plus harga dalam SOL atau USDC; agen membayar, mengulang permintaan, lalu pulang membawa file dan bukti beli on-chain. Agen tidak bisa buka rekening bank atau lolos cek kartu kredit. Tapi agen bisa menandatangani transaksi, dan di sini itu sudah cukup. Manusia tetap bisa belanja dan menyewa jasa, dengan escrow di setiap jasa.",
     primary: "Mulai jualan",
     secondary: "Lihat agen berbelanja",
     statFee: "Biaya platform, tanpa biaya tersembunyi",
@@ -428,7 +428,7 @@ export const id: Copy = {
       {
         k: "01",
         title: "Pasang karyamu",
-        body: "Unggah file atau jelaskan jasamu, lalu tentukan harga dalam SOL. Listing langsung muncul di etalase untuk manusia dan di katalog yang bisa dibaca mesin.",
+        body: "Unggah file atau jelaskan jasamu, lalu tentukan harga dalam SOL; pembeli boleh bayar pakai SOL atau USDC. Listing langsung muncul di katalog yang bisa dibaca mesin dan di etalase untuk manusia.",
       },
       {
         k: "02",
@@ -445,19 +445,19 @@ export const id: Copy = {
 
   agents: {
     title: "Dibangun supaya mesin bisa jadi pelanggan",
-    sub: "Satu endpoint publik menjelaskan semua listing beserta langkah persis untuk login, membayar, dan mengambil barang. Tidak perlu pasang SDK, tidak perlu minta API key.",
+    sub: "Setiap produk adalah resource x402. Minta barangnya, dapat harganya, bayar, minta lagi, dapat file-nya. Tanpa akun, tanpa SDK, tanpa perlu minta API key.",
     points: [
       {
-        title: "Login dengan keypair",
-        body: "Login cukup dengan menandatangani nonce. Kalau bisa menandatangani pesan Solana, kamu sudah punya akun. Berlaku untuk semua wallet, termasuk agen.",
+        title: "HTTP 402, bayar pakai SOL atau USDC",
+        body: "GET /api/agent/products/<slug> menjawab 402 Payment Required berisi transfer yang harus dikirim, bahkan instruksi yang tinggal ditandatangani. Bayar, ulangi dengan signature di header X-PAYMENT, dan file-nya keluar. Wallet yang membayar itulah akunnya.",
       },
       {
-        title: "Katalog yang menjelaskan dirinya sendiri",
-        body: "GET /api/agent/catalog mengembalikan semua produk dan jasa beserta harganya, lengkap dengan resep alur pembelian. Agen yang belum pernah melihat SolGig bisa menyelesaikan pembelian hanya dari satu respons itu.",
+        title: "Katalog yang ditulis untuk mesin",
+        body: "GET /api/agent/catalog memuat semua produk dengan harga SOL dan USDC, URL pembelian, dan JSON Schema di /api/agent/schema. Agen yang belum pernah melihat SolGig bisa langsung membeli dari satu respons itu.",
       },
       {
-        title: "Tidak ada yang dipercaya begitu saja",
-        body: "Saat pembeli bilang sudah bayar, server mengambil transaksinya langsung dari chain dan memeriksa penanda tangan, jumlah, dan perubahan saldo. Satu tanda tangan hanya bisa melunasi satu pesanan.",
+        title: "Bukti beli yang dijamin chain",
+        body: "Server mengambil pembayaran langsung dari chain lalu memeriksa penanda tangan, jumlah, dan fee-nya sendiri. Bukti beli yang dikembalikan memuat signature transaksi, jadi siapa pun bisa mengeceknya. Satu signature hanya bisa melunasi satu pesanan.",
       },
     ],
     demo: "Coba sendiri: keypair baru tanpa riwayat apa pun menemukan produk, membayarnya, lalu mengunduhnya. Sekitar tiga puluh detik, tanpa browser, tanpa manusia.",
@@ -530,7 +530,7 @@ export const id: Copy = {
   },
 
   finalCta: {
-    title: "Marketplace pertama tempat agenmu bisa belanja",
+    title: "Toko pertama yang dibuat supaya agenmu bisa belanja",
     sub: "Pasang sesuatu hari ini. Bisa jadi kamu tidak akan pernah bertemu pembeli berikutnya, karena pembelinya adalah skrip dengan keypair dan anggaran.",
     primary: "Mulai jualan",
     secondary: "Baca katalog agen",
