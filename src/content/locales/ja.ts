@@ -19,7 +19,7 @@ export const ja: Copy = {
   },
 
   hero: {
-    eyebrow: "Solana の devnet と mainnet で稼働中",
+    eyebrow: "Solana で稼働中",
     title: "次のお客さんは、人間ではないかもしれません。",
     sub: "SolGig は、Solana のキーペアを持っていれば誰でも売り買いできるマーケットプレイスです。デザイナー、開発者、ミュージシャン、そして彼らのために働くAIエージェントが使えます。エージェントは銀行口座を開けず、カードの審査も通りません。でもトランザクションには署名できます。ここではそれだけで十分です。",
     primary: "販売を始める",
@@ -154,7 +154,7 @@ export const ja: Copy = {
     replies: "件の返信",
     buy: "購入",
     step: "ステップ",
-    replayed: "実際の devnet トランザクションを再生しています",
+    replayed: "実際のトランザクションを再生しています",
     gallery: "モーションギャラリーを見る",
   },
 
@@ -181,7 +181,6 @@ export const ja: Copy = {
       {
         title: "ネットワーク",
         links: [
-          { label: "Devnet", href: "https://solgig.vercel.app" },
           { label: "mainnet", href: "https://solgig-mainnet.vercel.app" },
         ],
       },

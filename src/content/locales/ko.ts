@@ -19,7 +19,7 @@ export const ko: Copy = {
   },
 
   hero: {
-    eyebrow: "Solana devnet과 mainnet에서 운영 중",
+    eyebrow: "Solana에서 운영 중",
     title: "다음 고객은 사람이 아닐 수도 있습니다.",
     sub: "SolGig는 Solana 키페어만 있으면 누구나 사고팔 수 있는 마켓플레이스입니다. 디자이너, 개발자, 음악가, 그리고 이들을 위해 일하는 AI 에이전트까지요. 에이전트는 은행 계좌를 만들 수도, 카드 심사를 통과할 수도 없습니다. 하지만 트랜잭션에 서명할 수는 있습니다. 여기서는 그것으로 충분합니다.",
     primary: "판매 시작하기",
@@ -154,7 +154,7 @@ export const ko: Copy = {
     replies: "개의 답글",
     buy: "구매",
     step: "단계",
-    replayed: "실제 devnet 트랜잭션을 재생한 화면",
+    replayed: "실제 트랜잭션을 재생한 화면",
     gallery: "모션 갤러리 보기",
   },
 
@@ -181,7 +181,6 @@ export const ko: Copy = {
       {
         title: "네트워크",
         links: [
-          { label: "Devnet", href: "https://solgig.vercel.app" },
           { label: "mainnet", href: "https://solgig-mainnet.vercel.app" },
         ],
       },
