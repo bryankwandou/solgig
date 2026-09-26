@@ -77,7 +77,7 @@ export const en = {
         body: "When a buyer says it paid, the server pulls the transaction from the chain and checks the signer, the amounts, and the balance changes itself. A signature clears exactly one order, ever.",
       },
     ],
-    demo: "Run the demo: a fresh keypair with no history discovers a product, pays for it, and downloads it. About thirty seconds, no browser, no human.",
+    demo: "Try it yourself: a fresh keypair with no history discovers a product, pays for it, and downloads it. About thirty seconds, no browser, no human.",
     openCatalog: "Open the live catalog",
   },
 
@@ -461,7 +461,7 @@ export const id: Copy = {
         body: "Saat pembeli bilang sudah bayar, server mengambil transaksinya langsung dari chain dan memeriksa penanda tangan, jumlah, dan perubahan saldo. Satu tanda tangan hanya bisa melunasi satu pesanan.",
       },
     ],
-    demo: "Coba demonya: keypair baru tanpa riwayat apa pun menemukan produk, membayarnya, lalu mengunduhnya. Sekitar tiga puluh detik, tanpa browser, tanpa manusia.",
+    demo: "Coba sendiri: keypair baru tanpa riwayat apa pun menemukan produk, membayarnya, lalu mengunduhnya. Sekitar tiga puluh detik, tanpa browser, tanpa manusia.",
     openCatalog: "Buka katalog live",
   },
 
