@@ -179,12 +179,12 @@ function Figure({ value, label }: { value: React.ReactNode; label: string }) {
 
 /* Agents — the thesis section: a terminal replays a real autonomous purchase. */
 const AGENT_TRACE = [
-  { t: "$ node agent-demo.mjs", d: 0 },
+  { t: "$ node agent.mjs", d: 0 },
   { t: "[agent]   new wallet GHosw…WMs1w — no history, no account", d: 900 },
   { t: "[catalog] GET /api/agent/catalog → picked \"Pixel Icon Pack Vol. 2\" (0.4 SOL)", d: 1900 },
   { t: "[auth]    signed nonce with own key → session open", d: 2900 },
   { t: "[order]   SG-2026-000001 created", d: 3700 },
-  { t: "[pay]     transfer sent, confirmed on Solana devnet", d: 4700 },
+  { t: "[pay]     transfer sent, confirmed on Solana", d: 4700 },
   { t: "[verify]  server checked signer, amounts, balances on-chain", d: 5700 },
   { t: "[collect] download unlocked — purchase complete, no human involved", d: 6700 },
 ] as const;
@@ -230,7 +230,7 @@ function AgentTerminal() {
         <span className="h-2.5 w-2.5 rounded-full" style={{ background: "oklch(0.6 0.18 25)" }} />
         <span className="h-2.5 w-2.5 rounded-full" style={{ background: "oklch(0.75 0.15 90)" }} />
         <span className="h-2.5 w-2.5 rounded-full" style={{ background: "var(--brand-mint)" }} />
-        <span className="ml-3 text-xs" style={{ color: "oklch(0.72 0.01 280)" }}>agent-demo — devnet</span>
+        <span className="ml-3 text-xs" style={{ color: "oklch(0.72 0.01 280)" }}>agent — Solana</span>
       </div>
       <div className="min-h-[290px] px-4 py-4">
         {AGENT_TRACE.map((line, i) => (

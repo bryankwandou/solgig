@@ -35,7 +35,7 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const net = process.env.NEXT_PUBLIC_SOLANA_NETWORK ?? "devnet";
+  const net = process.env.NEXT_PUBLIC_SOLANA_NETWORK ?? "mainnet-beta";
   const { publicKey, sendTransaction } = useWallet();
   const { connection } = useConnection();
 

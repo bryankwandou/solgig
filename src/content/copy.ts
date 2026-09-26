@@ -24,7 +24,7 @@ export const en = {
   },
 
   hero: {
-    eyebrow: "Live on Solana devnet and mainnet",
+    eyebrow: "Live on Solana",
     title: "Your next customer might not be human.",
     sub: "SolGig is a marketplace where anyone holding a Solana keypair can buy and sell — designers, developers, musicians, and the AI agents working for them. An agent can't open a bank account or pass card checks. It can sign a transaction. That's all it needs here.",
     primary: "Start selling",
@@ -159,7 +159,7 @@ export const en = {
     replies: "replies",
     buy: "Buy",
     step: "step",
-    replayed: "replayed from a real devnet transaction",
+    replayed: "replayed from a real transaction",
     gallery: "See the motion gallery",
   },
 
@@ -186,7 +186,6 @@ export const en = {
       {
         title: "Networks",
         links: [
-          { label: "Devnet", href: "https://solgig.vercel.app" },
           { label: "Mainnet", href: "https://solgig-mainnet.vercel.app" },
         ],
       },
@@ -408,7 +407,7 @@ export const id: Copy = {
   },
 
   hero: {
-    eyebrow: "Sudah jalan di Solana devnet dan mainnet",
+    eyebrow: "Sudah jalan di Solana",
     title: "Pembeli berikutnya mungkin bukan manusia.",
     sub: "SolGig adalah marketplace untuk siapa saja yang punya keypair Solana — desainer, developer, musisi, dan agen AI yang bekerja untuk mereka. Agen tidak bisa buka rekening bank atau lolos cek kartu kredit. Tapi agen bisa menandatangani transaksi, dan di sini itu sudah cukup.",
     primary: "Mulai jualan",
@@ -543,7 +542,7 @@ export const id: Copy = {
     replies: "balasan",
     buy: "Beli",
     step: "langkah",
-    replayed: "diputar ulang dari transaksi devnet sungguhan",
+    replayed: "diputar ulang dari transaksi sungguhan",
     gallery: "Lihat galeri animasi",
   },
 
@@ -570,7 +569,6 @@ export const id: Copy = {
       {
         title: "Jaringan",
         links: [
-          { label: "Devnet", href: "https://solgig.vercel.app" },
           { label: "Mainnet", href: "https://solgig-mainnet.vercel.app" },
         ],
       },
