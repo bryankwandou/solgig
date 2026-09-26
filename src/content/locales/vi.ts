@@ -19,7 +19,7 @@ export const vi: Copy = {
   },
 
   hero: {
-    eyebrow: "Đang chạy trên Solana devnet và mainnet",
+    eyebrow: "Đang chạy trên Solana",
     title: "Khách hàng tiếp theo của bạn có thể không phải là người.",
     sub: "SolGig là chợ mua bán cho bất kỳ ai có keypair Solana: nhà thiết kế, lập trình viên, nhạc sĩ, và cả những tác tử AI làm việc cho họ. Một tác tử không thể mở tài khoản ngân hàng hay qua được bước kiểm tra thẻ. Nhưng nó ký được giao dịch. Ở đây, chừng đó là đủ.",
     primary: "Bắt đầu bán",
@@ -154,7 +154,7 @@ export const vi: Copy = {
     replies: "phản hồi",
     buy: "Mua",
     step: "bước",
-    replayed: "phát lại từ một giao dịch devnet thật",
+    replayed: "phát lại từ một giao dịch thật",
     gallery: "Xem bộ sưu tập hiệu ứng",
   },
 
@@ -181,7 +181,6 @@ export const vi: Copy = {
       {
         title: "Mạng",
         links: [
-          { label: "Devnet", href: "https://solgig.vercel.app" },
           { label: "mainnet", href: "https://solgig-mainnet.vercel.app" },
         ],
       },

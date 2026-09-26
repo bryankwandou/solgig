@@ -28,7 +28,7 @@ export const ru: Copy = {
   },
 
   hero: {
-    eyebrow: "Работает в Solana devnet и mainnet",
+    eyebrow: "Работает в Solana",
     title: "Ваш следующий покупатель может оказаться не человеком.",
     sub: "SolGig — маркетплейс, где покупать и продавать может любой, у кого есть ключевая пара Solana: дизайнеры, разработчики, музыканты и AI-агенты, которые на них работают. Агент не может открыть банковский счёт или пройти проверку карты. Зато он может подписать транзакцию. Здесь этого достаточно.",
     primary: "Начать продавать",
@@ -163,7 +163,7 @@ export const ru: Copy = {
     replies: "ответов",
     buy: "Купить",
     step: "шаг",
-    replayed: "воспроизведено по реальной транзакции в devnet",
+    replayed: "воспроизведено по реальной транзакции",
     gallery: "Открыть галерею анимаций",
   },
 
@@ -190,7 +190,6 @@ export const ru: Copy = {
       {
         title: "Сети",
         links: [
-          { label: "Devnet", href: "https://solgig.vercel.app" },
           { label: "Mainnet", href: "https://solgig-mainnet.vercel.app" },
         ],
       },
