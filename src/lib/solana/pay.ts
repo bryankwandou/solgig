@@ -1,7 +1,7 @@
 import { Connection } from "@solana/web3.js";
 
 export const RPC_URL =
-  process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? "https://api.devnet.solana.com";
+  process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? "https://api.mainnet-beta.solana.com";
 
 export function getConnection() {
   return new Connection(RPC_URL, "confirmed");

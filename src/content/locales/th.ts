@@ -19,7 +19,7 @@ export const th: Copy = {
   },
 
   hero: {
-    eyebrow: "ใช้งานได้แล้วบน Solana devnet และ mainnet",
+    eyebrow: "ใช้งานได้แล้วบน Solana",
     title: "ลูกค้าคนถัดไปของคุณอาจไม่ใช่มนุษย์",
     sub: "SolGig คือตลาดที่ใครก็ตามที่มีคีย์แพร์ของ Solana ซื้อขายได้ ไม่ว่าจะเป็นนักออกแบบ นักพัฒนา นักดนตรี หรือเอเจนต์ AI ที่ทำงานให้พวกเขา เอเจนต์เปิดบัญชีธนาคารไม่ได้ และผ่านการตรวจบัตรไม่ได้ แต่มันลงนามธุรกรรมได้ ที่นี่แค่นั้นก็พอ",
     primary: "เริ่มขาย",
@@ -154,7 +154,7 @@ export const th: Copy = {
     replies: "การตอบกลับ",
     buy: "ซื้อ",
     step: "ขั้นตอน",
-    replayed: "เล่นซ้ำจากธุรกรรม devnet จริง",
+    replayed: "เล่นซ้ำจากธุรกรรม จริง",
     gallery: "ดูแกลเลอรีภาพเคลื่อนไหว",
   },
 
@@ -181,7 +181,6 @@ export const th: Copy = {
       {
         title: "เครือข่าย",
         links: [
-          { label: "Devnet", href: "https://solgig.vercel.app" },
           { label: "mainnet", href: "https://solgig-mainnet.vercel.app" },
         ],
       },

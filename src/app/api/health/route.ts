@@ -36,7 +36,7 @@ export async function GET() {
     escrowAddress,
     treasuryConfigured: !!treasury,
     treasury,
-    network: process.env.NEXT_PUBLIC_SOLANA_NETWORK ?? "devnet",
+    network: process.env.NEXT_PUBLIC_SOLANA_NETWORK ?? "mainnet-beta",
     escrowProgram: process.env.NEXT_PUBLIC_ESCROW_PROGRAM_ID ?? null,
     sessionSecretSet: !!process.env.SESSION_SECRET,
   });
