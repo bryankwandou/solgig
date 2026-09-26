@@ -17,9 +17,6 @@ const WalletMultiButton = dynamic(
   { ssr: false },
 );
 
-const NETWORK = process.env.NEXT_PUBLIC_SOLANA_NETWORK ?? "mainnet-beta";
-const IS_MAINNET = NETWORK === "mainnet-beta";
-
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, signOut, signingIn } = useAuth();
@@ -28,16 +25,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen">
-      <div
-        className="px-5 py-1.5 text-center text-xs font-medium"
-        style={
-          IS_MAINNET
-            ? { background: "var(--brand-violet)", color: "oklch(0.99 0 0)" }
-            : { background: "var(--warn)", color: "var(--on-brand)" }
-        }
-      >
-        {copy.app.mainnetBanner}
-      </div>
       <header
         className="sticky top-0 z-40 border-b"
         style={{
