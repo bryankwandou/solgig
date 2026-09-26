@@ -72,7 +72,7 @@ export const vi: Copy = {
         body: "Khi người mua nói đã trả tiền, máy chủ lấy giao dịch từ chuỗi và tự kiểm tra người ký, số tiền và biến động số dư. Mỗi chữ ký chỉ xác nhận được đúng một đơn hàng, mãi mãi.",
       },
     ],
-    demo: "Chạy bản demo: một keypair mới tinh, không có lịch sử, tìm thấy một sản phẩm, trả tiền và tải về. Khoảng ba mươi giây, không trình duyệt, không có người.",
+    demo: "Tự chạy thử: một keypair mới tinh, không có lịch sử, tìm thấy một sản phẩm, trả tiền và tải về. Khoảng ba mươi giây, không trình duyệt, không có người.",
     openCatalog: "Mở danh mục đang chạy",
   },
 
