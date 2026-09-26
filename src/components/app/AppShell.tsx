@@ -97,6 +97,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 fontWeight: 600,
                 lineHeight: "38px",
                 padding: "0 16px",
+                whiteSpace: "nowrap",
               }}
             />
           </div>

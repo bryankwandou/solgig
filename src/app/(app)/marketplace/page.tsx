@@ -65,7 +65,7 @@ export default function MarketplacePage() {
         </p>
       )}
 
-      <Stagger className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <Stagger key={items.length} className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((p) => (
           <StaggerItem key={p.id}>
             <HoverTilt>
