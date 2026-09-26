@@ -72,7 +72,7 @@ export const fr: Copy = {
         body: "Quand un acheteur affirme avoir payé, le serveur récupère la transaction sur la blockchain et vérifie lui-même le signataire, les montants et les variations de solde. Une signature ne valide qu'une seule commande, une seule fois.",
       },
     ],
-    demo: "Lance la démo : une paire de clés toute neuve, sans historique, trouve un produit, le paie et le télécharge. Une trentaine de secondes, sans navigateur, sans humain.",
+    demo: "Essaie toi-même : une paire de clés toute neuve, sans historique, trouve un produit, le paie et le télécharge. Une trentaine de secondes, sans navigateur, sans humain.",
     openCatalog: "Ouvrir le catalogue en direct",
   },
 

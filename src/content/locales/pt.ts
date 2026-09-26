@@ -72,7 +72,7 @@ export const pt: Copy = {
         body: "Quando um comprador diz que pagou, o servidor busca a transação na blockchain e confere por conta própria quem assinou, os valores e as mudanças de saldo. Cada assinatura libera um único pedido, uma única vez.",
       },
     ],
-    demo: "Rode a demo: um par de chaves novo, sem histórico, encontra um produto, paga e faz o download. Uns trinta segundos, sem navegador e sem ninguém por trás.",
+    demo: "Teste você mesmo: um par de chaves novo, sem histórico, encontra um produto, paga e faz o download. Uns trinta segundos, sem navegador e sem ninguém por trás.",
     openCatalog: "Abrir o catálogo ao vivo",
   },
 

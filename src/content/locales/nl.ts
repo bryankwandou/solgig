@@ -72,7 +72,7 @@ export const nl: Copy = {
         body: "Als een koper zegt dat hij heeft betaald, haalt de server de transactie van de chain en controleert zelf de ondertekenaar, de bedragen en de saldowijzigingen. Een handtekening telt voor precies één bestelling, en maar één keer.",
       },
     ],
-    demo: "Start de demo: een nieuw sleutelpaar zonder geschiedenis vindt een product, betaalt ervoor en downloadt het. Ongeveer dertig seconden, zonder browser en zonder mens.",
+    demo: "Probeer het zelf: een nieuw sleutelpaar zonder geschiedenis vindt een product, betaalt ervoor en downloadt het. Ongeveer dertig seconden, zonder browser en zonder mens.",
     openCatalog: "Open de live catalogus",
   },
 

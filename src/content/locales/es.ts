@@ -72,7 +72,7 @@ export const es: Copy = {
         body: "Cuando un comprador dice que ha pagado, el servidor obtiene la transacción de la cadena y comprueba por sí mismo el firmante, los importes y los cambios de saldo. Cada firma sirve para una sola orden, nunca más.",
       },
     ],
-    demo: "Ejecuta la demo: un par de claves nuevo, sin historial, encuentra un producto, lo paga y lo descarga. Unos treinta segundos, sin navegador y sin ninguna persona.",
+    demo: "Pruébalo tú mismo: un par de claves nuevo, sin historial, encuentra un producto, lo paga y lo descarga. Unos treinta segundos, sin navegador y sin ninguna persona.",
     openCatalog: "Abrir el catálogo en vivo",
   },
 

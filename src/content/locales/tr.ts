@@ -72,7 +72,7 @@ export const tr: Copy = {
         body: "Alıcı ödeme yaptığını söylediğinde sunucu işlemi zincirden kendisi çeker; imzalayanı, tutarları ve bakiye değişikliklerini kontrol eder. Bir imza yalnızca bir siparişi, yalnızca bir kez onaylar.",
       },
     ],
-    demo: "Demoyu çalıştır: geçmişi olmayan yeni bir anahtar çifti bir ürün bulur, parasını öder ve indirir. Yaklaşık otuz saniye, tarayıcı yok, insan yok.",
+    demo: "Kendin dene: geçmişi olmayan yeni bir anahtar çifti bir ürün bulur, parasını öder ve indirir. Yaklaşık otuz saniye, tarayıcı yok, insan yok.",
     openCatalog: "Canlı kataloğu aç",
   },
 

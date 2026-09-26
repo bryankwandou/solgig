@@ -72,7 +72,7 @@ export const ms: Copy = {
         body: "Apabila pembeli berkata ia sudah membayar, pelayan menarik transaksi itu dari rantaian dan menyemak sendiri penandatangan, jumlah, dan perubahan baki. Satu tandatangan hanya boleh menyelesaikan satu pesanan, selama-lamanya.",
       },
     ],
-    demo: "Jalankan demo: keypair baharu tanpa sejarah menemui produk, membayarnya, dan memuat turunnya. Kira-kira tiga puluh saat, tanpa pelayar, tanpa manusia.",
+    demo: "Cuba sendiri: keypair baharu tanpa sejarah menemui produk, membayarnya, dan memuat turunnya. Kira-kira tiga puluh saat, tanpa pelayar, tanpa manusia.",
     openCatalog: "Buka katalog langsung",
   },
 
