@@ -169,6 +169,7 @@ export async function POST(req: NextRequest) {
       : purchaseIx(program, { ...parties, treasury: new PublicKey(treasury!), amount: split.gross });
     return NextResponse.json({
       order,
+      referral: { credited: !!referrerId },
       payment: {
         settlement,
         escrow: isService,
@@ -190,6 +191,7 @@ export async function POST(req: NextRequest) {
   // amountLamports is the total the buyer spends, fee included.
   return NextResponse.json({
     order,
+    referral: { credited: !!referrerId },
     payment: custodial
       ? {
           // The whole amount goes to escrow in one transfer; the fee split

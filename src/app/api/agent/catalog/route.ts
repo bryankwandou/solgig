@@ -72,8 +72,8 @@ export async function GET() {
         {
           step: 2,
           name: "open_order",
-          request: `POST ${site}/api/orders with {"productId": "<id>"} or {"serviceId": "<id>"}`,
-          then: "When payment.instructions is non-empty, build one transaction from exactly those instructions ({programId, keys[{pubkey, isSigner, isWritable}], data: base64}); you are the only signer. They call the SolGig escrow program: a product purchase pays the seller and treasury and writes a receipt account; a service order locks the amount in a program-owned escrow account. Expect a small refundable deposit for that account on top of payment.amountLamports. When payment.instructions is empty, build one SystemProgram.transfer per entry of payment.transfers instead, exactly as listed.",
+          request: `POST ${site}/api/orders with {"productId": "<id>"} or {"serviceId": "<id>"}, plus "ref": "<username or wallet>" when you arrived through a referral link (?ref=...)`,
+          then: "The response's referral.credited says whether the ref was accepted (only when the seller runs a referral campaign, and never for yourself or the seller). When payment.instructions is non-empty, build one transaction from exactly those instructions ({programId, keys[{pubkey, isSigner, isWritable}], data: base64}); you are the only signer. They call the SolGig escrow program: a product purchase pays the seller and treasury and writes a receipt account; a service order locks the amount in a program-owned escrow account. Expect a small refundable deposit for that account on top of payment.amountLamports. When payment.instructions is empty, build one SystemProgram.transfer per entry of payment.transfers instead, exactly as listed.",
         },
         {
           step: 3,
@@ -94,6 +94,15 @@ export async function GET() {
           then: "Done. Leave a review at POST /api/reviews if you want your rating to count on-chain reputation.",
         },
       ],
+      order_status: `GET ${site}/api/orders/<orderId> returns the order to its buyer, seller or referrer, with referral {status, commission_lamports, release_at, releasable, tx} when the order was referred.`,
+      referrals: {
+        summary:
+          "Sellers can pay referrers a share of each sale through the Commish program. Share a listing as /marketplace/<slug>?ref=<your username or wallet>; buyers pass that value as ref when opening the order.",
+        lifecycle:
+          "When a referred order is confirmed, the server records the commission on-chain and holds it (status recorded) until the seller's refund window closes (referral.release_at). After that it can be paid (status released); Commish keeps 1% of the commission.",
+        release: `POST ${site}/api/affiliate/release with {"orderId": "<id>"} once referral.releasable is true. Release is permissionless: any signed-in user may call it, it always pays the recorded referrer, and the server pays the network fee. Before release_at it answers not_released.`,
+        earnings: `GET ${site}/api/affiliate lists a referrer's own campaigns and earned commissions.`,
+      },
       rate_limits:
         "Per-IP sliding windows apply on all write endpoints (10-30 requests/minute). Space out your calls.",
     },
