@@ -227,3 +227,24 @@ CREATE INDEX IF NOT EXISTS idx_rate_limits_window ON rate_limits(window_start);
 -- services).
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS settlement TEXT NOT NULL DEFAULT 'transfer';
 UPDATE orders SET settlement = 'custodial' WHERE escrow = true AND settlement = 'transfer';
+
+-- =========================================
+-- REFERRALS through Commish (on-chain affiliate commissions). Safe to re-run.
+-- =========================================
+-- One campaign per seller: a Commish campaign whose attestor is this server.
+CREATE TABLE IF NOT EXISTS affiliate_campaigns (
+  seller_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  campaign_address TEXT UNIQUE NOT NULL,
+  bps INTEGER NOT NULL,
+  hold_seconds BIGINT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+-- Who referred the order, and the commission reserved for them on chain.
+-- commission_status: recording | recorded | released | cancelled | failed
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS referrer_id UUID REFERENCES users(id);
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS commission_address TEXT;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS commission_lamports BIGINT;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS commission_status TEXT;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS commission_release_at TIMESTAMPTZ;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS commission_tx TEXT;
+CREATE INDEX IF NOT EXISTS idx_orders_referrer ON orders(referrer_id, created_at DESC) WHERE referrer_id IS NOT NULL;

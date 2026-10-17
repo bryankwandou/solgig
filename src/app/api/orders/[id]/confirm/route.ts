@@ -8,6 +8,7 @@ import { verifyPayment } from "@/lib/solana/pay";
 import { getEscrowAddress } from "@/lib/solana/escrow";
 import { escrowProgramId } from "@/lib/solana/program";
 import { verifyProgramPayment } from "@/lib/solana/settle";
+import { recordReferral } from "@/lib/referrals";
 
 export const runtime = "nodejs";
 
@@ -176,5 +177,9 @@ export async function POST(
     SELECT id FROM upd
   `;
 
-  return NextResponse.json({ ok: true, status: nextStatus });
+  // A referred sale that just completed reserves the referrer's commission
+  // on chain. It never fails the order; the outcome is kept on the order.
+  const referral = nextStatus === "completed" ? await recordReferral(id) : null;
+
+  return NextResponse.json({ ok: true, status: nextStatus, referral });
 }

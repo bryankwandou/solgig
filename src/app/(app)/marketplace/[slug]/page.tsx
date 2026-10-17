@@ -8,7 +8,8 @@ import { useAuth } from "@/lib/auth/useAuth";
 import { formatSol, shortAddress } from "@/lib/utils";
 import { ProgressRing } from "@/components/motion";
 import Link from "next/link";
-import { useCopy } from "@/lib/i18n";
+import { useCopy, useLocale } from "@/lib/i18n";
+import { affiliateCopy } from "@/content/affiliate";
 
 type Product = {
   id: string;
@@ -26,6 +27,8 @@ type Product = {
   seller_name: string | null;
   seller_wallet: string;
   seller_reputation: number;
+  /** The seller's referral rate in bps, when they run a Commish campaign. */
+  affiliate_bps?: number | null;
 };
 type Related = {
   slug: string;
@@ -208,7 +211,7 @@ function BuyPanel({ product }: { product: Product }) {
       const created = await fetch("/api/orders", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ productId: product.id }),
+        body: JSON.stringify({ productId: product.id, ref: referral() }),
       }).then((r) => r.json());
       if (created.error) throw new Error(created.error.message);
 
@@ -297,6 +300,7 @@ function BuyPanel({ product }: { product: Product }) {
           )}
         </>
       )}
+      {product.affiliate_bps ? <ReferralShare product={product} /> : null}
     </div>
   );
 }
@@ -395,6 +399,48 @@ function Success({
         </div>
       ) : (
         <p className="mt-4 text-sm text-[var(--text-mut)]">{t.product.thanks}</p>
+      )}
+    </div>
+  );
+}
+
+/** The `ref` of the link that brought the buyer here, kept for this tab. */
+function referral(): string | undefined {
+  try {
+    const fromUrl = new URLSearchParams(window.location.search).get("ref");
+    if (fromUrl) sessionStorage.setItem("solgig:ref", fromUrl);
+    return fromUrl ?? sessionStorage.getItem("solgig:ref") ?? undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function ReferralShare({ product }: { product: Product }) {
+  const { user } = useAuth();
+  const { locale } = useLocale();
+  const t = affiliateCopy(locale);
+  const [copied, setCopied] = useState(false);
+  const [ref, setRef] = useState<string | null>(null);
+  // Remember an incoming ref as soon as the page opens, not only at checkout.
+  useEffect(() => setRef(referral() ?? null), []);
+  const pct = String((product.affiliate_bps ?? 0) / 100);
+  const mine = user && user.wallet_address !== product.seller_wallet ? user.username || user.wallet_address : null;
+  const link = mine && typeof window !== "undefined" ? `${window.location.origin}/marketplace/${product.slug}?ref=${encodeURIComponent(mine)}` : null;
+  return (
+    <div className="mt-5 rounded-[var(--radius-md)] border p-4 text-sm" style={{ background: "var(--surface-2)" }}>
+      <div className="font-semibold">{t.shareHead(pct)}</div>
+      <p className="mt-1 text-xs text-[var(--text-mut)]">{t.shareSub}</p>
+      {ref && ref !== mine && <p className="mt-2 text-xs">{t.referredBy(ref.length > 24 ? shortAddress(ref) : ref)}</p>}
+      {link && (
+        <div className="mt-3 flex gap-2">
+          <input readOnly value={link} className="min-w-0 flex-1 rounded-md border bg-transparent px-2 py-1 font-mono text-xs" />
+          <button
+            onClick={() => navigator.clipboard.writeText(link).then(() => setCopied(true))}
+            className="shrink-0 rounded-full border px-3 py-1 text-xs font-semibold"
+          >
+            {copied ? t.copied : t.copy}
+          </button>
+        </div>
       )}
     </div>
   );

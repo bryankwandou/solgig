@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
+import { recordReferral } from "@/lib/referrals";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { orderSplit } from "@/lib/fees";
 import { readUuidParam, unauthorized } from "@/lib/http";
@@ -186,5 +187,7 @@ export async function POST(
     SELECT id FROM done
   `;
 
-  return NextResponse.json({ ok: true, status: "completed", payoutSignature });
+  const referral = await recordReferral(id);
+
+  return NextResponse.json({ ok: true, status: "completed", payoutSignature, referral });
 }

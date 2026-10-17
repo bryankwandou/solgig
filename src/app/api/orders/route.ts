@@ -12,6 +12,7 @@ import {
   toWire,
 } from "@/lib/solana/program";
 import { PublicKey } from "@solana/web3.js";
+import { referrerFor } from "@/lib/referrals";
 
 export const runtime = "nodejs";
 
@@ -22,6 +23,8 @@ const CreateOrder = z
   .object({
     productId: z.string().uuid().optional(),
     serviceId: z.string().uuid().optional(),
+    /** Username from a referral link (?ref=); credited only if the seller runs a campaign. */
+    ref: z.string().max(64).optional(),
   })
   .refine((d) => !!d.productId !== !!d.serviceId, {
     message: "Pick exactly one listing",
@@ -125,6 +128,8 @@ export async function POST(req: NextRequest) {
   const settlement = program ? "program" : custodial ? "custodial" : "transfer";
   const heldInEscrow = isService && settlement !== "transfer";
 
+  const referrerId = await referrerFor(parsed.data.ref, user.id, listing.seller_id);
+
   const orderNumber = (
     await sql`SELECT 'SG-2026-' || LPAD(nextval('order_seq')::text, 6, '0') AS n`
   )[0].n as string;
@@ -143,6 +148,8 @@ export async function POST(req: NextRequest) {
     RETURNING id, order_number
   `) as { id: string; order_number: string }[];
   const order = rows[0];
+  // Written separately so deployments without referrals never touch the column.
+  if (referrerId) await sql`UPDATE orders SET referrer_id = ${referrerId} WHERE id = ${order.id}`;
 
   if (program) {
     // One program instruction does the whole payment. Goods: seller and

@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth/useAuth";
 import { CounterUp } from "@/components/motion";
 import { formatSol, lamportsToSol } from "@/lib/utils";
 import { useCopy } from "@/lib/i18n";
+import { AffiliatePanel } from "@/components/app/AffiliatePanel";
 
 type Dash = {
   profile: {
@@ -88,6 +89,8 @@ export default function DashboardPage() {
         <Metric label={t.dashboard.completed} value={<CounterUp to={data?.profile.completed_orders ?? 0} />} />
         <Metric label={t.dashboard.reputation} value={<CounterUp to={data?.profile.reputation_score ?? 0} />} />
       </div>
+
+      <AffiliatePanel />
 
       <Section title={t.dashboard.products}>
         {data && data.products.length > 0 ? (

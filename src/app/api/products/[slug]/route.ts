@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
+import { commishEnabled } from "@/lib/solana/commish";
 
 export const runtime = "nodejs";
 
@@ -29,7 +30,16 @@ export async function GET(
       { status: 404 },
     );
   }
-  const product = rows[0] as { id: string };
+  const product = rows[0] as { id: string; seller_wallet: string; affiliate_bps?: number | null };
+
+  // The seller's referral rate, when referrals are on and they run a campaign.
+  if (commishEnabled()) {
+    const c = (await sql`
+      SELECT c.bps FROM affiliate_campaigns c JOIN users u ON u.id = c.seller_id
+      WHERE u.wallet_address = ${product.seller_wallet}
+    `) as { bps: number }[];
+    product.affiliate_bps = c[0]?.bps ?? null;
+  }
 
   await sql`UPDATE products SET view_count = view_count + 1 WHERE slug = ${slug}`;
 
